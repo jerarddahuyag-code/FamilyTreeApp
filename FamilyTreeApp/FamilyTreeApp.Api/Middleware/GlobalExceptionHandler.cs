@@ -1,8 +1,8 @@
-using System.Net;
-using System.Text.Json;
 using FamilyTreeApp.Application.Common.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using System.Net;
+using System.Text.Json;
 
 namespace FamilyTreeApp.Api.Middleware;
 
@@ -13,7 +13,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var (statusCode, message) = exception switch
+        (HttpStatusCode statusCode, string? message) = exception switch
         {
             NotFoundException notFound => (HttpStatusCode.NotFound, notFound.Message),
             ValidationException validation => (HttpStatusCode.BadRequest,
@@ -24,7 +24,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         httpContext.Response.StatusCode = (int)statusCode;
         httpContext.Response.ContentType = "application/json";
 
-        var response = JsonSerializer.Serialize(new { error = message });
+        string response = JsonSerializer.Serialize(new { error = message });
         await httpContext.Response.WriteAsync(response, cancellationToken);
         return true;
     }

@@ -17,7 +17,7 @@ public class SampleEntity : AggregateRoot
 
     public static SampleEntity Create(string name, string description)
     {
-        var sample = new SampleEntity(name, description);
+        SampleEntity sample = new SampleEntity(name, description);
         sample.RaiseDomainEvent(new SampleDomainEvent(sample.Id));
         return sample;
     }

@@ -1,8 +1,8 @@
-using System.Reflection;
-using FluentValidation;
 using FamilyTreeApp.Application.Common.Behaviors;
 using FamilyTreeApp.Domain.Common;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace FamilyTreeApp.Application;
 
@@ -10,7 +10,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        var assembly = Assembly.GetExecutingAssembly();
+        Assembly assembly = Assembly.GetExecutingAssembly();
 
         // Register all command handlers via Scrutor assembly scanning
         services.Scan(scan => scan

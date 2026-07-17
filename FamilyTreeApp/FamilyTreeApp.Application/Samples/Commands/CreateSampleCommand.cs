@@ -8,13 +8,13 @@ public record CreateSampleCommand(string Name, string Description);
 
 public class CreateSampleCommandHandler(
     ISampleRepository repository,
-    IUnitOfWork unitOfWork) 
+    IUnitOfWork unitOfWork)
     : ICommandHandler<CreateSampleCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(CreateSampleCommand command, CancellationToken cancellationToken = default)
     {
-        var sample = SampleEntity.Create(command.Name, command.Description);
-        
+        SampleEntity sample = SampleEntity.Create(command.Name, command.Description);
+
         await repository.AddAsync(sample, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

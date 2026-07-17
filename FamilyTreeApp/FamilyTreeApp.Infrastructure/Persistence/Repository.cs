@@ -1,6 +1,6 @@
-using System.Linq.Expressions;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace FamilyTreeApp.Infrastructure.Persistence;
 

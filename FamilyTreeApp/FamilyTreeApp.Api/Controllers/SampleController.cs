@@ -14,21 +14,21 @@ public class SampleController(
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateSampleCommand command, CancellationToken cancellationToken)
     {
-        var result = await createHandler.HandleAsync(command, cancellationToken);
+        Result<Guid> result = await createHandler.HandleAsync(command, cancellationToken);
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return CreatedAtAction(nameof(Get), new { id = result.Value }, result.Value);
+        return CreatedAtAction(nameof(Create), new { id = result.Value }, result.Value);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
-        var result = await getHandler.HandleAsync(new GetSampleQuery(id), cancellationToken);
-        
+        Result<SampleDto> result = await getHandler.HandleAsync(new GetSampleQuery(id), cancellationToken);
+
         if (result.IsFailure)
             return NotFound(result.Error);
-            
+
         return Ok(result.Value);
     }
 }
