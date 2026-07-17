@@ -13,7 +13,7 @@ public class GetSampleQueryHandler(IApplicationDbContext context)
 {
     public async Task<Result<SampleDto>> HandleAsync(GetSampleQuery query, CancellationToken cancellationToken = default)
     {
-        SampleEntity? sample = await context.Samples.FindAsync(new object[] { query.Id }, cancellationToken);
+        SampleEntity? sample = await context.Samples.FindAsync([query.Id], cancellationToken);
 
         if (sample is null)
             return Result.Failure<SampleDto>(new Error("Sample.NotFound", "The sample was not found."));
