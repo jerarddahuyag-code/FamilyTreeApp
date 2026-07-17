@@ -1,4 +1,6 @@
-﻿namespace FamilyTreeApp.Domain.ValueObjects;
+﻿using FamilyTreeApp.Domain.Common.Enums;
+
+namespace FamilyTreeApp.Domain.ValueObjects;
 
 public record ProfileInfo
 {
@@ -12,6 +14,7 @@ public record ProfileInfo
 
     public string? PhoneNumber { get; init; }
 
+    public Gender? Gender { get; init; }
 
     public string? Bio { get; init; }
 }

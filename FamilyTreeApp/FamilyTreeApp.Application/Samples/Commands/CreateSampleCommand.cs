@@ -1,13 +1,13 @@
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Entities;
-using FamilyTreeApp.Domain.Repositories;
 
 namespace FamilyTreeApp.Application.Samples.Commands;
 
 public record CreateSampleCommand(string Name, string Description);
 
 public class CreateSampleCommandHandler(
-    ISampleRepository repository,
+    IApplicationDbContext context,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CreateSampleCommand, Guid>
 {
@@ -15,9 +15,9 @@ public class CreateSampleCommandHandler(
     {
         SampleEntity sample = SampleEntity.Create(command.Name, command.Description);
 
-        await repository.AddAsync(sample, cancellationToken);
+        await context.Samples.AddAsync(sample, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(sample.Id);
+        return Result.Success(sample.SampleEntityId);
     }
 }

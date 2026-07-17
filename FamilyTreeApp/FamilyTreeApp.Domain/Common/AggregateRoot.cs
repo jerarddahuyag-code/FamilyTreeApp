@@ -1,6 +1,6 @@
 namespace FamilyTreeApp.Domain.Common;
 
-public abstract class AggregateRoot : Entity
+public abstract class AggregateRoot
 {
     private readonly List<IDomainEvent> _domainEvents = [];
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
