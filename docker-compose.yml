@@ -1,0 +1,39 @@
+services:
+  database:
+    image: pgvector/pgvector:pg18
+    container_name: family_tree_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mynet
+  backend:
+    build:
+      context: .
+      dockerfile: FamilyTreeApp/FamilyTreeApp.Api/Dockerfile
+    container_name: family_tree_api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - database
+    networks:
+      - mynet
+networks:
+  mynet:
+    driver: bridge
+volumes:
+  postgres_data:
+    driver: local
+  minio_data:
+    driver: local

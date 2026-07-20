@@ -1,5 +1,6 @@
 using FamilyTreeApp.Application.CQRS.Commands;
 using FamilyTreeApp.Application.CQRS.Queries;
+using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Entities;
 using FamilyTreeApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +13,14 @@ namespace FamilyTreeApp.Api.Controllers;
 public class UsersController(ApplicationDbContext db) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll(GetUsersQueryHandler query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromServices] GetUsersQueryHandler query, CancellationToken cancellationToken)
     {
         var users = await query.HandleAsync(new GetUsersQuery { IncludePrivate = false }, cancellationToken);
         return Ok(users);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, GetUserByIdHandler getUserByIdHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid id, [FromServices] GetUserByIdHandler getUserByIdHandler, CancellationToken cancellationToken)
     {
         var user = await getUserByIdHandler.HandleAsync(new GetUserById { UserId = id }, cancellationToken);
         if (user is null)
@@ -29,21 +30,11 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] User user, CreateUserCommandHandler createUserCommandHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateUserCommand user, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserCommandHandler, CancellationToken cancellationToken)
     {
-        var createdUserId = await createUserCommandHandler.HandleAsync(new CreateUserCommand
-        {
-            Email = user.Email,
-            FirstName = user.ProfileInfo.FirstName,
-            LastName = user.ProfileInfo.LastName,
-            BirthDate = user.ProfileInfo.BirthDate,
-            AvatarUrl = user.ProfileInfo.AvatarUrl,
-            PhoneNumber = user.ProfileInfo.PhoneNumber,
-            Gender = user.ProfileInfo.Gender,
-            Bio = user.ProfileInfo.Bio
-        }, cancellationToken);
+        var createdUserId = await createUserCommandHandler.HandleAsync(user, cancellationToken);
 
-        return CreatedAtAction(nameof(Create), new { id = createdUserId }, createdUserId);
+        return CreatedAtAction(nameof(Get), new { id = createdUserId }, createdUserId);
     }
 
     [HttpPut("{id:guid}")]
@@ -60,7 +51,7 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
         existing.IsPublic = user.IsPublic;
         existing.ProfileInfo = user.ProfileInfo;
         existing.UpdatedAt = DateTime.UtcNow;
-
+        
         db.Users.Update(existing);
         await db.SaveChangesAsync(cancellationToken);
 

@@ -1,5 +1,6 @@
 using FamilyTreeApp.Application;
 using FamilyTreeApp.Infrastructure;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,11 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }); ;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
