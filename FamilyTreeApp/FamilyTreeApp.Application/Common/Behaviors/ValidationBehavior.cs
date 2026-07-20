@@ -16,18 +16,18 @@ public sealed class ValidationPipelineBehavior<TCommand, TResult>(
         if (!validators.Any())
             return await innerHandler.HandleAsync(command, cancellationToken);
 
-        ValidationContext<TCommand> context = new ValidationContext<TCommand>(command);
+        var context = new ValidationContext<TCommand>(command);
         ValidationResult[] validationResults = await Task.WhenAll(
             validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
-        List<ValidationFailure> failures = validationResults
+        var failures = validationResults
             .SelectMany(r => r.Errors)
             .Where(f => f is not null)
             .ToList();
 
         if (failures.Count != 0)
         {
-            string errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
+            var errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
             return Result.Failure<TResult>(new Error("Error.Validation", errorMessage));
         }
 

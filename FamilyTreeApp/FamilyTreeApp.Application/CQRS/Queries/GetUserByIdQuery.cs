@@ -2,9 +2,6 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Enums;
 using FamilyTreeApp.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Application.CQRS.Queries;
 
@@ -40,7 +37,7 @@ public class GetUserByIdHandler(
 {
     public async Task<Result<GetUserByIdQueryResponse?>> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken)
     {
-        var user = await context.Users
+        User? user = await context.Users
             .FindAsync([query.UserId], cancellationToken);
 
         if (user is null)

@@ -2,7 +2,7 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Entities;
 
-namespace FamilyTreeApp.Application.Samples.Queries;
+namespace FamilyTreeApp.Application.CQRS.Queries;
 
 public record GetSampleQuery(Guid Id);
 

@@ -1,5 +1,3 @@
-using FamilyTreeApp.Application.Samples.Commands;
-using FamilyTreeApp.Application.Samples.Queries;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 

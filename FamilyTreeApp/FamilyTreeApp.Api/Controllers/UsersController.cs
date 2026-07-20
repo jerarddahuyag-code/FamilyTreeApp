@@ -15,14 +15,14 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, List<User>> getUsersHandler, CancellationToken cancellationToken)
     {
-        var users = await getUsersHandler.HandleAsync(query, cancellationToken);
+        Result<List<User>> users = await getUsersHandler.HandleAsync(query, cancellationToken);
         return Ok(users);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
     {
-        var user = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
+        Result<GetUserByIdQueryResponse>? user = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
         if (user is null)
             return NotFound();
 
@@ -32,7 +32,7 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserCommand command, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
     {
-        var createdUserId = await createUserHandler.HandleAsync(command, cancellationToken);
+        Result<Guid> createdUserId = await createUserHandler.HandleAsync(command, cancellationToken);
 
         return Created($"/api/users/{createdUserId}", createdUserId);
     }
@@ -43,7 +43,7 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
         if (id != user.UserId)
             return BadRequest("Mismatched user id");
 
-        var existing = await db.Users.FirstOrDefaultAsync(u => u.UserId == id, cancellationToken);
+        User? existing = await db.Users.FirstOrDefaultAsync(u => u.UserId == id, cancellationToken);
         if (existing is null)
             return NotFound();
 
@@ -51,7 +51,7 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
         existing.IsPublic = user.IsPublic;
         existing.ProfileInfo = user.ProfileInfo;
         existing.UpdatedAt = DateTime.UtcNow;
-        
+
         db.Users.Update(existing);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -61,7 +61,7 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var existing = await db.Users.FirstOrDefaultAsync(u => u.UserId == id, cancellationToken);
+        User? existing = await db.Users.FirstOrDefaultAsync(u => u.UserId == id, cancellationToken);
         if (existing is null)
             return NotFound();
 

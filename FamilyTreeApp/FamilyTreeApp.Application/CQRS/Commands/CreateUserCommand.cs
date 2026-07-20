@@ -1,12 +1,8 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Application.Samples.Commands;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Enums;
 using FamilyTreeApp.Domain.Entities;
 using FamilyTreeApp.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
 

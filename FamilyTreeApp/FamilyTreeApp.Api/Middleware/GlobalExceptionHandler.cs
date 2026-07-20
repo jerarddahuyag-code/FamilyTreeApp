@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
 
 namespace FamilyTreeApp.Api.Middleware;
 
