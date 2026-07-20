@@ -1,31 +1,24 @@
-using FamilyTreeApp.Application.Common.Exceptions;
-using FluentValidation;
-using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace FamilyTreeApp.Api.Middleware;
 
-public sealed class GlobalExceptionHandler : IExceptionHandler
+public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        (HttpStatusCode statusCode, string? message) = exception switch
-        {
-            NotFoundException notFound => (HttpStatusCode.NotFound, notFound.Message),
-            ValidationException validation => (HttpStatusCode.BadRequest,
-                JsonSerializer.Serialize(validation.Errors.Select(e => e.ErrorMessage))),
-            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred.")
-        };
+        logger.LogError(exception, "An unhandled exception occurred.");
 
-        httpContext.Response.StatusCode = (int)statusCode;
+        httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         httpContext.Response.ContentType = "application/json";
 
-        string response = JsonSerializer.Serialize(new { error = message });
+        var response = JsonSerializer.Serialize(new { error = "An unexpected error occurred." });
         await httpContext.Response.WriteAsync(response, cancellationToken);
+
         return true;
     }
 }
