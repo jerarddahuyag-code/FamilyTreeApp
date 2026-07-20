@@ -12,28 +12,37 @@ public class UsersController() : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
     {
-        Result<GetUsersQueryResponse> users = await getUsersHandler.HandleAsync(query, cancellationToken);
-        return Ok(users);
+        Result<GetUsersQueryResponse> result = await getUsersHandler.HandleAsync(query, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Value);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
     {
-        Result<GetUserByIdQueryResponse>? user = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
-        if (user is null)
+        Result<GetUserByIdQueryResponse>? result = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.Error);
         }
 
-        return Ok(user);
+        return Ok(result.Value);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserCommand command, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
     {
-        Result<Guid> createdUserId = await createUserHandler.HandleAsync(command, cancellationToken);
+        Result<Guid> result = await createUserHandler.HandleAsync(command, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
 
-        return Created($"/api/users/{createdUserId}", createdUserId);
+        return Created($"/api/users/{result.Value}", result.Value);
     }
 
     [HttpDelete("{id:guid}")]
@@ -42,7 +51,7 @@ public class UsersController() : ControllerBase
         Result<bool> result = await deleteUserHandler.HandleAsync(new DeleteUserCommand { UserId = id }, cancellationToken);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.Value);
         }
 
         return NoContent();

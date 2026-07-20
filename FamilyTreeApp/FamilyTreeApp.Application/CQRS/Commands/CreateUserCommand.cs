@@ -34,7 +34,7 @@ public class CreateUserCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateUserCommand command, CancellationToken cancellationToken = default)
     {
-        User user = User.Create(
+        var result = User.Create(
             Guid.NewGuid(),
             command.Email,
             new ProfileInfo
@@ -46,7 +46,14 @@ public class CreateUserCommandHandler(
                 PhoneNumber = command.PhoneNumber,
                 Gender = command.Gender,
                 Bio = command.Bio
-            }).Value;
+            });
+
+        if (!result.IsSuccess)
+        {
+            return Result.Failure<Guid>(result.Error);
+        }
+
+        User user = result.Value;
 
         await context.Users.AddAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
