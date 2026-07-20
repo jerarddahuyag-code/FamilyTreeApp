@@ -1,3 +1,5 @@
+using FamilyTreeApp.Domain.Common.Errors;
+
 namespace FamilyTreeApp.Domain.Common;
 
 public class Result

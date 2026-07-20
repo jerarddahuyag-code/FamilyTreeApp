@@ -2,6 +2,8 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.ValueObjects;
 using FamilyTreeApp.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using FamilyTreeApp.Domain.Common.Errors;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
 
@@ -33,12 +35,13 @@ public class UpdateProfileCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(UpdateProfileCommand command, CancellationToken cancellationToken = default)
     {
-        User? existing = context.Users.FirstOrDefault(u => u.UserId == command.UserId);
+        User? existing = await context.Users
+            .Where(u => u.DeletedAt == null)
+            .FirstOrDefaultAsync(u => u.UserId == command.UserId, cancellationToken);
 
         if (existing is null)
-            return Result.Failure<Guid>(new Error("Error.NotFound", "User not found."));
+            return Result.Failure<Guid>(UserErrors.UserNotFound);
 
-        // Merge profile info: only replace fields provided, keep existing otherwise
         var current = existing.ProfileInfo ?? new ProfileInfo();
 
         existing.ProfileInfo = new ProfileInfo

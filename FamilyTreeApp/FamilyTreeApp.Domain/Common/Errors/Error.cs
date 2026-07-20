@@ -1,4 +1,4 @@
-namespace FamilyTreeApp.Domain.Common;
+namespace FamilyTreeApp.Domain.Common.Errors;
 
 public record Error(string Code, string Message)
 {

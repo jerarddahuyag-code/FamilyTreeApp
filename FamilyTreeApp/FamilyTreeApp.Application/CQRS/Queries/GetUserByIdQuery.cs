@@ -1,7 +1,9 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Enums;
+using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.CQRS.Queries;
 
@@ -38,10 +40,11 @@ public class GetUserByIdHandler(
     public async Task<Result<GetUserByIdQueryResponse?>> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken)
     {
         User? user = await context.Users
-            .FindAsync([query.UserId], cancellationToken);
+            .Where(u => u.DeletedAt == null)
+            .FirstOrDefaultAsync(u => u.UserId == query.UserId, cancellationToken);
 
         if (user is null)
-            return Result.Failure<GetUserByIdQueryResponse?>(new Error("User.NotFound", "The user was not found."));
+            return Result.Failure<GetUserByIdQueryResponse?>(UserErrors.UserNotFound);
 
         return Result.Success(new GetUserByIdQueryResponse
         {

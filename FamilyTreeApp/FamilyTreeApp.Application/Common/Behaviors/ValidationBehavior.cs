@@ -1,4 +1,5 @@
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common.Errors;
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -28,7 +29,7 @@ public sealed class ValidationPipelineBehavior<TCommand, TResult>(
         if (failures.Count != 0)
         {
             var errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
-            return Result.Failure<TResult>(new Error("Error.Validation", errorMessage));
+            return Result.Failure<TResult>(Error.Validation);
         }
 
         return await innerHandler.HandleAsync(command, cancellationToken);
