@@ -35,8 +35,8 @@ public class CreateUserCommandHandler(
     public async Task<Result<Guid>> HandleAsync(CreateUserCommand command, CancellationToken cancellationToken = default)
     {
         User user = User.Create(
-            Guid.NewGuid(), 
-            command.Email, 
+            Guid.NewGuid(),
+            command.Email,
             new ProfileInfo
             {
                 FirstName = command.FirstName,

@@ -21,7 +21,9 @@ public class UsersController() : ControllerBase
     {
         Result<GetUserByIdQueryResponse>? user = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
         if (user is null)
+        {
             return NotFound();
+        }
 
         return Ok(user);
     }
@@ -39,7 +41,9 @@ public class UsersController() : ControllerBase
     {
         Result<bool> result = await deleteUserHandler.HandleAsync(new DeleteUserCommand { UserId = id }, cancellationToken);
         if (!result.IsSuccess)
+        {
             return NotFound();
+        }
 
         return NoContent();
     }

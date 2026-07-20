@@ -44,7 +44,9 @@ public class GetUserByIdHandler(
             .FirstOrDefaultAsync(u => u.UserId == query.UserId, cancellationToken);
 
         if (user is null)
-            return Result.Failure<GetUserByIdQueryResponse?>(UserErrors.UserNotFound);
+        {
+            return Result.Failure<GetUserByIdQueryResponse?>(DomainErrors.UserErrors.UserNotFound);
+        }
 
         return Result.Success(new GetUserByIdQueryResponse
         {

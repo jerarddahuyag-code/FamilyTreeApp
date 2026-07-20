@@ -1,10 +1,10 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
+using FamilyTreeApp.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
 
@@ -41,9 +41,11 @@ public class UpdateProfileCommandHandler(
             .FirstOrDefaultAsync(u => u.UserId == command.UserId, cancellationToken);
 
         if (existing is null)
-            return Result.Failure<Guid>(UserErrors.UserNotFound);
+        {
+            return Result.Failure<Guid>(DomainErrors.UserErrors.UserNotFound);
+        }
 
-        var current = existing.ProfileInfo ?? new ProfileInfo();
+        ProfileInfo current = existing.ProfileInfo ?? new ProfileInfo();
 
         existing.UpdateProfile(new ProfileInfo
         {
@@ -59,9 +61,13 @@ public class UpdateProfileCommandHandler(
         if (command.IsPublic.HasValue)
         {
             if (command.IsPublic.Value)
+            {
                 existing.MakePublic();
+            }
             else
+            {
                 existing.MakePrivate();
+            }
         }
 
         context.Users.Update(existing);

@@ -15,7 +15,9 @@ public sealed class ValidationPipelineBehavior<TCommand, TResult>(
         CancellationToken cancellationToken = default)
     {
         if (!validators.Any())
+        {
             return await innerHandler.HandleAsync(command, cancellationToken);
+        }
 
         var context = new ValidationContext<TCommand>(command);
         ValidationResult[] validationResults = await Task.WhenAll(

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FamilyTreeApp.Domain.Trees.Enums;
+﻿namespace FamilyTreeApp.Domain.Trees.Enums;
 
 public enum TreeRole
 {

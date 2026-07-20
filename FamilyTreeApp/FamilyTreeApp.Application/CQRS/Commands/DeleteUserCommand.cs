@@ -2,9 +2,6 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Users.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
 
@@ -23,7 +20,11 @@ public class DeleteUserCommandHandler(
         User? user = await context.Users
             .FindAsync([command.UserId], cancellationToken);
         if (user is null)
-            return Result.Failure<bool>(UserErrors.UserNotFound);
+        {
+            return Result.Failure<bool>(DomainErrors.UserErrors.UserNotFound);
+        }
+
+        user.SoftDelete();
         context.Users.Update(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(true);
