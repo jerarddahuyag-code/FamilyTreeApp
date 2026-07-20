@@ -8,9 +8,9 @@ namespace FamilyTreeApp.Domain.Users.Entities;
 public class User : AggregateRoot
 {
     public Guid UserId { get; private set; }
-    public string Email { get; private set; }
+    public string Email { get; private set; } = null!;
     public bool IsPublic { get; private set; }
-    public ProfileInfo ProfileInfo { get; private set; }
+    public ProfileInfo ProfileInfo { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }

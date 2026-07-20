@@ -17,4 +17,10 @@ public static class DomainErrors
         public readonly static Error InvalidTreeRole = new("Tree.InvalidRole", "The provided tree role is invalid.");
         public readonly static Error TreeDeleted = new("Tree.Delete", "The Tree has been deleted.");
     }
+
+    public static class ExternalLoginErrors
+    {
+        public readonly static Error InvalidProvider = new("ExternalLogin.InvalidProvider", "The provided external login provider is invalid.");
+        public readonly static Error InvalidProviderKey = new("ExternalLogin.InvalidProviderKey", "The provided external login provider key is invalid.");
+    }
 }
