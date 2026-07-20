@@ -1,4 +1,4 @@
-﻿namespace FamilyTreeApp.Domain.Common.Enums;
+﻿namespace FamilyTreeApp.Domain.Users.Enums;
 
 public enum Gender
 {

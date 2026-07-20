@@ -1,7 +1,7 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.Common.Enums;
-using FamilyTreeApp.Domain.Entities;
+using FamilyTreeApp.Domain.Users.Entities;
+using FamilyTreeApp.Domain.Users.Enums;
 using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
@@ -34,12 +34,10 @@ public class CreateUserCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateUserCommand command, CancellationToken cancellationToken = default)
     {
-        User user = new User
-        {
-            UserId = Guid.NewGuid(),
-            Email = command.Email,
-            IsPublic = command.IsPublic,
-            ProfileInfo = new ProfileInfo
+        User user = User.Create(
+            Guid.NewGuid(), 
+            command.Email, 
+            new ProfileInfo
             {
                 FirstName = command.FirstName,
                 LastName = command.LastName,
@@ -48,10 +46,7 @@ public class CreateUserCommandHandler(
                 PhoneNumber = command.PhoneNumber,
                 Gender = command.Gender,
                 Bio = command.Bio
-            },
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
+            }).Value;
 
         await context.Users.AddAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

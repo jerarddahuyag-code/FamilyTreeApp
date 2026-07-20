@@ -1,9 +1,10 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.ValueObjects;
-using FamilyTreeApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Users.Entities;
+using FamilyTreeApp.Domain.Users.Enums;
 
 namespace FamilyTreeApp.Application.CQRS.Commands;
 
@@ -23,7 +24,7 @@ public record UpdateProfileCommand
 
     public string? PhoneNumber { get; init; }
 
-    public Domain.Common.Enums.Gender? Gender { get; init; }
+    public Gender? Gender { get; init; }
 
     public string? Bio { get; init; }
 }
@@ -44,7 +45,7 @@ public class UpdateProfileCommandHandler(
 
         var current = existing.ProfileInfo ?? new ProfileInfo();
 
-        existing.ProfileInfo = new ProfileInfo
+        existing.UpdateProfile(new ProfileInfo
         {
             FirstName = command.FirstName ?? current.FirstName,
             LastName = command.LastName ?? current.LastName,
@@ -53,12 +54,15 @@ public class UpdateProfileCommandHandler(
             PhoneNumber = command.PhoneNumber ?? current.PhoneNumber,
             Gender = command.Gender ?? current.Gender,
             Bio = command.Bio ?? current.Bio
-        };
+        });
 
         if (command.IsPublic.HasValue)
-            existing.IsPublic = command.IsPublic.Value;
-
-        existing.UpdatedAt = DateTime.UtcNow;
+        {
+            if (command.IsPublic.Value)
+                existing.MakePublic();
+            else
+                existing.MakePrivate();
+        }
 
         context.Users.Update(existing);
         await unitOfWork.SaveChangesAsync(cancellationToken);

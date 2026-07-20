@@ -12,24 +12,20 @@ public static class DependencyInjection
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
 
-        // Register all command handlers via Scrutor assembly scanning
         services.Scan(scan => scan
             .FromAssemblies(assembly)
             .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
 
-        // Register all query handlers via Scrutor assembly scanning
         services.Scan(scan => scan
             .FromAssemblies(assembly)
             .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
 
-        // Register FluentValidation validators
         services.AddValidatorsFromAssembly(assembly);
 
-        // Decorate command handlers with validation pipeline behavior
         services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationPipelineBehavior<,>));
 
         return services;

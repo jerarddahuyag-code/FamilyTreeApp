@@ -1,5 +1,5 @@
 using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Domain.Entities;
+using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Infrastructure.Persistence;
@@ -7,8 +7,6 @@ namespace FamilyTreeApp.Infrastructure.Persistence;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : DbContext(options), IApplicationDbContext
 {
-    public DbSet<SampleEntity> Samples { get; set; }
-
     public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

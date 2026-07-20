@@ -18,7 +18,6 @@ public class ProfileController() : ControllerBase
 
         if (result.IsFailure)
         {
-            // Map not found to 404, otherwise return BadRequest with error
             if (result.Error.Code == "Error.NotFound")
                 return NotFound();
 

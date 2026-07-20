@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Domain.Common.Enums;
+﻿using FamilyTreeApp.Domain.Users.Enums;
 
 namespace FamilyTreeApp.Domain.ValueObjects;
 

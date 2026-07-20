@@ -1,7 +1,7 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.Common.Enums;
-using FamilyTreeApp.Domain.Entities;
+using FamilyTreeApp.Domain.Users.Entities;
+using FamilyTreeApp.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.CQRS.Queries;
