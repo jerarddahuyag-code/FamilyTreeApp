@@ -13,16 +13,16 @@ namespace FamilyTreeApp.Api.Controllers;
 public class UsersController(ApplicationDbContext db) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromServices] GetUsersQueryHandler query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, List<User>> getUsersHandler, CancellationToken cancellationToken)
     {
-        var users = await query.HandleAsync(new GetUsersQuery { IncludePrivate = false }, cancellationToken);
+        var users = await getUsersHandler.HandleAsync(query, cancellationToken);
         return Ok(users);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, [FromServices] GetUserByIdHandler getUserByIdHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
     {
-        var user = await getUserByIdHandler.HandleAsync(new GetUserById { UserId = id }, cancellationToken);
+        var user = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
         if (user is null)
             return NotFound();
 
@@ -30,11 +30,11 @@ public class UsersController(ApplicationDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserCommand user, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserCommandHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateUserCommand command, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
     {
-        var createdUserId = await createUserCommandHandler.HandleAsync(user, cancellationToken);
+        var createdUserId = await createUserHandler.HandleAsync(command, cancellationToken);
 
-        return CreatedAtAction(nameof(Get), new { id = createdUserId }, createdUserId);
+        return Created($"/api/users/{createdUserId}", createdUserId);
     }
 
     [HttpPut("{id:guid}")]

@@ -8,12 +8,12 @@ using System.Text;
 
 namespace FamilyTreeApp.Application.CQRS.Queries;
 
-public record GetUserById
+public record GetUserByIdQuery
 {
     public required Guid UserId { get; init; }
 }
 
-public record GetUserByIdResponse
+public record GetUserByIdQueryResponse
 {
     public required Guid UserId { get; init; }
 
@@ -36,17 +36,17 @@ public record GetUserByIdResponse
 
 public class GetUserByIdHandler(
     IApplicationDbContext context)
-    : IQueryHandler<GetUserById, GetUserByIdResponse?>
+    : IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse?>
 {
-    public async Task<Result<GetUserByIdResponse?>> HandleAsync(GetUserById query, CancellationToken cancellationToken)
+    public async Task<Result<GetUserByIdQueryResponse?>> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken)
     {
         var user = await context.Users
             .FindAsync([query.UserId], cancellationToken);
 
         if (user is null)
-            return Result.Failure<GetUserByIdResponse?>(new Error("User.NotFound", "The user was not found."));
+            return Result.Failure<GetUserByIdQueryResponse?>(new Error("User.NotFound", "The user was not found."));
 
-        return Result.Success(new GetUserByIdResponse
+        return Result.Success(new GetUserByIdQueryResponse
         {
             UserId = user.UserId,
             Email = user.Email,

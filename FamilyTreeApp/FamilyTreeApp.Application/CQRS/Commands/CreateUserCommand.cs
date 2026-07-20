@@ -27,6 +27,8 @@ public record CreateUserCommand
     public Gender? Gender { get; init; }
 
     public string? Bio { get; init; }
+
+    public required bool IsPublic { get; init; }
 }
 
 public class CreateUserCommandHandler(
@@ -40,7 +42,7 @@ public class CreateUserCommandHandler(
         {
             UserId = Guid.NewGuid(),
             Email = command.Email,
-            IsPublic = true,
+            IsPublic = command.IsPublic,
             ProfileInfo = new ProfileInfo
             {
                 FirstName = command.FirstName,
