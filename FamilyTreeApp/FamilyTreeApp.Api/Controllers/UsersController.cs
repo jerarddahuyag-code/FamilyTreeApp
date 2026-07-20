@@ -13,9 +13,9 @@ namespace FamilyTreeApp.Api.Controllers;
 public class UsersController(ApplicationDbContext db) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, List<User>> getUsersHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
     {
-        Result<List<User>> users = await getUsersHandler.HandleAsync(query, cancellationToken);
+        Result<GetUsersQueryResponse> users = await getUsersHandler.HandleAsync(query, cancellationToken);
         return Ok(users);
     }
 
