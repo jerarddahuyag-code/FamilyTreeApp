@@ -48,7 +48,7 @@ public class CreateUserCommandHandler(
                 Bio = command.Bio
             });
 
-        if (!result.IsSuccess)
+        if (result.IsFailure)
         {
             return Result.Failure<Guid>(result.Error);
         }
