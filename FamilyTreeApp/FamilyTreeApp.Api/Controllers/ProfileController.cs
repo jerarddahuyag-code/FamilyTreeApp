@@ -1,4 +1,4 @@
-using FamilyTreeApp.Application.CQRS.Commands;
+using FamilyTreeApp.Application.Users.CQRS.Commands;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using Microsoft.AspNetCore.Mvc;

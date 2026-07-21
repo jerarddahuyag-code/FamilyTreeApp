@@ -1,5 +1,5 @@
-using FamilyTreeApp.Application.CQRS.Commands;
-using FamilyTreeApp.Application.CQRS.Queries;
+using FamilyTreeApp.Application.Users.CQRS.Commands;
+using FamilyTreeApp.Application.Users.CQRS.Queries;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 

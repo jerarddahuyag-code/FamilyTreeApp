@@ -4,7 +4,7 @@ using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
 using FamilyTreeApp.Domain.ValueObjects;
 
-namespace FamilyTreeApp.Application.CQRS.Commands;
+namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
 public record CreateUserCommand
 {

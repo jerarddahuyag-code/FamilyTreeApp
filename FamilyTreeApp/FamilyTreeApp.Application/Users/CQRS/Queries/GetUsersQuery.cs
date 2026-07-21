@@ -4,7 +4,7 @@ using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace FamilyTreeApp.Application.CQRS.Queries;
+namespace FamilyTreeApp.Application.Users.CQRS.Queries;
 
 public record GetUsersQuery
 {

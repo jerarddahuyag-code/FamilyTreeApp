@@ -3,7 +3,7 @@ using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Users.Entities;
 
-namespace FamilyTreeApp.Application.CQRS.Commands;
+namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
 public record DeleteUserCommand
 {

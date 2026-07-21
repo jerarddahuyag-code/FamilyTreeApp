@@ -6,7 +6,7 @@ using FamilyTreeApp.Domain.Users.Enums;
 using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
-namespace FamilyTreeApp.Application.CQRS.Commands;
+namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
 public record UpdateProfileCommand
 {
