@@ -1,5 +1,4 @@
 ﻿using FamilyTreeApp.Domain.Trees.Entities;
-using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

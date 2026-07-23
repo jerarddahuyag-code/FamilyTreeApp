@@ -1,5 +1,4 @@
-﻿using FamilyTreeApp.Domain.Trees.Entities;
-using FamilyTreeApp.Domain.Users.Entities;
+﻿using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,6 +17,6 @@ public class ExternalLoginConfiguration : IEntityTypeConfiguration<ExternalLogin
         builder.Property(t => t.ProviderKey).HasColumnName("provider_key").IsRequired().HasMaxLength(255);
         builder.Property(t => t.CreatedAt).HasColumnName("created_at").IsRequired();
 
-        builder.HasIndex(t => new {t.Provider, t.ProviderKey }).IsUnique();
+        builder.HasIndex(t => new { t.Provider, t.ProviderKey }).IsUnique();
     }
 }

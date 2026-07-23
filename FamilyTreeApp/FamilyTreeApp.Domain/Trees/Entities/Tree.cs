@@ -47,7 +47,7 @@ public class Tree : AggregateRoot
         {
             return Result.Failure(DomainErrors.TreeErrors.InvalidTreeName);
         }
-     
+
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
         UpdatedAt = DateTime.UtcNow;

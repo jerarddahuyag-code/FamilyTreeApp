@@ -36,18 +36,18 @@ public class UpdateProfileCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(UpdateProfileCommand command, CancellationToken cancellationToken = default)
     {
-        User? existing = await context.Users
+        User? user = await context.Users
             .Where(u => u.DeletedAt == null)
             .FirstOrDefaultAsync(u => u.UserId == command.UserId, cancellationToken);
 
-        if (existing is null)
+        if (user is null)
         {
             return Result.Failure<Guid>(DomainErrors.UserErrors.UserNotFound);
         }
 
-        ProfileInfo current = existing.ProfileInfo ?? new ProfileInfo();
+        ProfileInfo current = user.ProfileInfo ?? new ProfileInfo();
 
-        var result = existing.UpdateProfile(new ProfileInfo
+        Result result = user.UpdateProfile(new ProfileInfo
         {
             FirstName = command.FirstName ?? current.FirstName,
             LastName = command.LastName ?? current.LastName,
@@ -65,21 +65,21 @@ public class UpdateProfileCommandHandler(
 
         if (command.IsPublic is true)
         {
-            result = existing.MakePublic();
+            result = user.MakePublic();
         }
         else
         {
-            result = existing.MakePrivate();
+            result = user.MakePrivate();
         }
-        
+
         if (result.IsFailure)
         {
             return Result.Failure<Guid>(result.Error);
         }
 
-        context.Users.Update(existing);
+        context.Users.Update(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(existing.UserId);
+        return Result.Success(user.UserId);
     }
 }

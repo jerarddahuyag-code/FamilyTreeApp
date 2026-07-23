@@ -1,9 +1,6 @@
 ﻿using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Trees.Enums;
 using FamilyTreeApp.Domain.Users.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Domain.Trees.Entities;
 

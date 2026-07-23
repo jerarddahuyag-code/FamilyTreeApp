@@ -17,7 +17,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         httpContext.Response.ContentType = "application/json";
 
-        var error = Error.Failure;
+        Error error = Error.Failure;
         var response = JsonSerializer.Serialize(new { code = error.Code, message = error.Message, type = error.Type.ToString() });
         await httpContext.Response.WriteAsync(response, cancellationToken);
 

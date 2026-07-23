@@ -33,7 +33,7 @@ public class TreesController : ApiControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
     {
-        var tree = await db.Trees
+        Tree? tree = await db.Trees
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
 
@@ -58,13 +58,13 @@ public class TreesController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTreeRequest request, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
     {
-        var createResult = Tree.Create(Guid.NewGuid(), request.Name, request.Description, request.IsPublic);
+        Result<Tree> createResult = Tree.Create(Guid.NewGuid(), request.Name, request.Description, request.IsPublic);
         if (createResult.IsFailure)
         {
             return HandleFailure(createResult);
         }
 
-        var tree = createResult.Value;
+        Tree tree = createResult.Value;
 
         await db.Trees.AddAsync(tree, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
@@ -82,13 +82,13 @@ public class TreesController : ApiControllerBase
             return BadRequest("Mismatched tree id");
         }
 
-        var tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
+        Tree? tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
         if (tree == null)
         {
             return NotFound(new { Message = "Tree not found" });
         }
 
-        var updateResult = tree.UpdateDetails(request.Name, request.Description);
+        Result updateResult = tree.UpdateDetails(request.Name, request.Description);
         if (updateResult.IsFailure)
         {
             return HandleFailure(updateResult);
@@ -98,13 +98,19 @@ public class TreesController : ApiControllerBase
         {
             if (request.IsPublic.Value)
             {
-                var r = tree.MakePublic();
-                if (r.IsFailure) return HandleFailure(r);
+                Result r = tree.MakePublic();
+                if (r.IsFailure)
+                {
+                    return HandleFailure(r);
+                }
             }
             else
             {
-                var r = tree.MakePrivate();
-                if (r.IsFailure) return HandleFailure(r);
+                Result r = tree.MakePrivate();
+                if (r.IsFailure)
+                {
+                    return HandleFailure(r);
+                }
             }
         }
 
@@ -116,13 +122,13 @@ public class TreesController : ApiControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
     {
-        var tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
+        Tree? tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
         if (tree == null)
         {
             return NotFound(new { Message = "Tree not found" });
         }
 
-        var result = tree.SoftDelete();
+        Result result = tree.SoftDelete();
         if (result.IsFailure)
         {
             return HandleFailure(result);

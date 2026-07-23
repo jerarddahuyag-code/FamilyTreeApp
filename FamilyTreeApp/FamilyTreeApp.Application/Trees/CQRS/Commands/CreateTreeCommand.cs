@@ -1,9 +1,6 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Trees.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
@@ -23,11 +20,12 @@ public class CreateTreeCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateTreeCommand command, CancellationToken cancellationToken = default)
     {
-        var result = Tree.Create(Guid.NewGuid(), command.Name, command.Description ?? string.Empty, command.IsPublic);
+        Result<Tree> result = Tree.Create(Guid.NewGuid(), command.Name, command.Description ?? string.Empty, command.IsPublic);
         if (result.IsFailure)
         {
             return Result.Failure<Guid>(result.Error);
         }
+
         Tree tree = result.Value;
         await context.Trees.AddAsync(tree, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
