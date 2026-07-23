@@ -9,7 +9,7 @@ namespace FamilyTreeApp.Api.Controllers;
 public class ProfileController : ApiControllerBase
 {
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileCommand request, [FromServices] ICommandHandler<UpdateProfileCommand, Guid> updateProfileHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateUserProfile(Guid id, [FromBody] UpdateProfileCommand request, [FromServices] ICommandHandler<UpdateProfileCommand, Guid> updateProfileHandler, CancellationToken cancellationToken)
     {
         // Passing Id should be temporary until we implement authentication and authorization
         request = request with { UserId = id };

@@ -10,7 +10,7 @@ namespace FamilyTreeApp.Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] GetUsersQuery request, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllUsers([FromQuery] GetUsersQuery request, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
     {
         Result<GetUsersQueryResponse> result = await getUsersHandler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
@@ -22,7 +22,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetUserById(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
     {
         Result<GetUserByIdQueryResponse>? result = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
         if (result.IsFailure)
@@ -34,7 +34,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateUserCommand request, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateUser(CreateUserCommand request, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
     {
         Result<Guid> result = await createUserHandler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
@@ -46,7 +46,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, [FromServices] ICommandHandler<DeleteUserCommand, bool> deleteUserHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteUser(Guid id, [FromServices] ICommandHandler<DeleteUserCommand, bool> deleteUserHandler, CancellationToken cancellationToken)
     {
         Result<bool> result = await deleteUserHandler.HandleAsync(new DeleteUserCommand { UserId = id }, cancellationToken);
         if (result.IsFailure)

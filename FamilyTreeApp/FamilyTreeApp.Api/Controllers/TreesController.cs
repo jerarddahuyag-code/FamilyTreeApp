@@ -10,7 +10,7 @@ namespace FamilyTreeApp.Api.Controllers;
 public class TreesController : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] GetTreesQuery request, [FromServices] IQueryHandler<GetTreesQuery, GetTreesQueryResponse> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllTrees([FromQuery] GetTreesQuery request, [FromServices] IQueryHandler<GetTreesQuery, GetTreesQueryResponse> handler, CancellationToken cancellationToken)
     {
         Result<GetTreesQueryResponse> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
@@ -22,7 +22,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetTreeByIdQuery, GetTreeByIdQueryResponse> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetTreeById(Guid id, [FromServices] IQueryHandler<GetTreeByIdQuery, GetTreeByIdQueryResponse> handler, CancellationToken cancellationToken)
     {
         Result<GetTreeByIdQueryResponse> result = await handler.HandleAsync(new GetTreeByIdQuery { TreeId = id }, cancellationToken);
         if (result.IsFailure)
@@ -34,7 +34,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateTree(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
     {
         Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
@@ -46,7 +46,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, Guid> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateTree(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, Guid> handler, CancellationToken cancellationToken)
     {
         request = request with { TreeId = id };
         Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
@@ -59,7 +59,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, [FromServices] ICommandHandler<DeleteTreeCommand, bool> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteTree(Guid id, [FromServices] ICommandHandler<DeleteTreeCommand, bool> handler, CancellationToken cancellationToken)
     {
         Result<bool> result = await handler.HandleAsync(new DeleteTreeCommand { TreeId = id }, cancellationToken);
         if (result.IsFailure)
