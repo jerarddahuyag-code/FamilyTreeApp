@@ -1,8 +1,7 @@
+using FamilyTreeApp.Application.Trees.CQRS.Commands;
+using FamilyTreeApp.Application.Trees.CQRS.Queries;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.Trees.Entities;
-using FamilyTreeApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Api.Controllers;
 
@@ -11,130 +10,62 @@ namespace FamilyTreeApp.Api.Controllers;
 public class TreesController : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] GetTreesQuery request, [FromServices] IQueryHandler<GetTreesQuery, GetTreesQueryResponse> handler, CancellationToken cancellationToken)
     {
-        var trees = await db.Trees
-            .AsNoTracking()
-            .Where(t => t.DeletedAt == null)
-            .Select(t => new
-            {
-                t.TreeId,
-                t.Name,
-                t.Description,
-                t.IsPublic,
-                t.CreatedAt,
-                t.UpdatedAt
-            })
-            .ToListAsync(cancellationToken);
-
-        return Ok(trees);
-    }
-
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
-    {
-        Tree? tree = await db.Trees
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
-
-        if (tree == null)
-        {
-            return NotFound(new { Message = "Tree not found" });
-        }
-
-        return Ok(new
-        {
-            tree.TreeId,
-            tree.Name,
-            tree.Description,
-            tree.IsPublic,
-            tree.CreatedAt,
-            tree.UpdatedAt
-        });
-    }
-
-    public record CreateTreeRequest(string Name, string Description, bool IsPublic);
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateTreeRequest request, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
-    {
-        Result<Tree> createResult = Tree.Create(Guid.NewGuid(), request.Name, request.Description, request.IsPublic);
-        if (createResult.IsFailure)
-        {
-            return HandleFailure(createResult);
-        }
-
-        Tree tree = createResult.Value;
-
-        await db.Trees.AddAsync(tree, cancellationToken);
-        await db.SaveChangesAsync(cancellationToken);
-
-        return Created($"/api/trees/{tree.TreeId}", new { tree.TreeId });
-    }
-
-    public record UpdateTreeRequest(Guid TreeId, string Name, string? Description, bool? IsPublic);
-
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTreeRequest request, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
-    {
-        if (id != request.TreeId)
-        {
-            return BadRequest("Mismatched tree id");
-        }
-
-        Tree? tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
-        if (tree == null)
-        {
-            return NotFound(new { Message = "Tree not found" });
-        }
-
-        Result updateResult = tree.UpdateDetails(request.Name, request.Description);
-        if (updateResult.IsFailure)
-        {
-            return HandleFailure(updateResult);
-        }
-
-        if (request.IsPublic.HasValue)
-        {
-            if (request.IsPublic.Value)
-            {
-                Result r = tree.MakePublic();
-                if (r.IsFailure)
-                {
-                    return HandleFailure(r);
-                }
-            }
-            else
-            {
-                Result r = tree.MakePrivate();
-                if (r.IsFailure)
-                {
-                    return HandleFailure(r);
-                }
-            }
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, [FromServices] ApplicationDbContext db, CancellationToken cancellationToken)
-    {
-        Tree? tree = await db.Trees.FirstOrDefaultAsync(t => t.TreeId == id && t.DeletedAt == null, cancellationToken);
-        if (tree == null)
-        {
-            return NotFound(new { Message = "Tree not found" });
-        }
-
-        Result result = tree.SoftDelete();
+        Result<GetTreesQueryResponse> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);
         }
 
-        await db.SaveChangesAsync(cancellationToken);
+        return Ok(result.Value);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(Guid id, [FromServices] IQueryHandler<GetTreeByIdQuery, GetTreeByIdQueryResponse> handler, CancellationToken cancellationToken)
+    {
+        Result<GetTreeByIdQueryResponse> result = await handler.HandleAsync(new GetTreeByIdQuery { TreeId = id }, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
+    {
+        Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return Created($"/api/trees/{result.Value}", new { TreeId = result.Value });
+    }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, Guid> handler, CancellationToken cancellationToken)
+    {
+        request = request with { TreeId = id };
+        Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, [FromServices] ICommandHandler<DeleteTreeCommand, bool> handler, CancellationToken cancellationToken)
+    {
+        Result<bool> result = await handler.HandleAsync(new DeleteTreeCommand { TreeId = id }, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
 
         return NoContent();
     }

@@ -10,7 +10,7 @@ namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
 public record UpdateProfileCommand
 {
-    public required Guid UserId { get; init; }
+    public Guid UserId { get; init; }
 
     public bool? IsPublic { get; init; }
 

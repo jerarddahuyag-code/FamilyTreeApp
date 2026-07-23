@@ -8,7 +8,7 @@ namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
 public record UpdateTreeCommand
 {
-    public required Guid TreeId { get; init; }
+    public Guid TreeId { get; init; }
 
     public string? Name { get; init; }
 

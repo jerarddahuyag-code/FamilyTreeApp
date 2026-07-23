@@ -9,15 +9,12 @@ namespace FamilyTreeApp.Api.Controllers;
 public class ProfileController : ApiControllerBase
 {
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileCommand command, [FromServices] ICommandHandler<UpdateProfileCommand, Guid> updateProfileHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileCommand request, [FromServices] ICommandHandler<UpdateProfileCommand, Guid> updateProfileHandler, CancellationToken cancellationToken)
     {
-        // This should be temporary until we implement authentication and authorization
-        if (id != command.UserId)
-        {
-            return BadRequest("Mismatched user id");
-        }
+        // Passing Id should be temporary until we implement authentication and authorization
+        request = request with { UserId = id };
 
-        Result<Guid> result = await updateProfileHandler.HandleAsync(command, cancellationToken);
+        Result<Guid> result = await updateProfileHandler.HandleAsync(request, cancellationToken);
 
         if (result.IsFailure)
         {

@@ -10,9 +10,9 @@ namespace FamilyTreeApp.Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromBody] GetUsersQuery query, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] GetUsersQuery request, [FromServices] IQueryHandler<GetUsersQuery, GetUsersQueryResponse> getUsersHandler, CancellationToken cancellationToken)
     {
-        Result<GetUsersQueryResponse> result = await getUsersHandler.HandleAsync(query, cancellationToken);
+        Result<GetUsersQueryResponse> result = await getUsersHandler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);
@@ -34,9 +34,9 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserCommand command, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateUserCommand request, [FromServices] ICommandHandler<CreateUserCommand, Guid> createUserHandler, CancellationToken cancellationToken)
     {
-        Result<Guid> result = await createUserHandler.HandleAsync(command, cancellationToken);
+        Result<Guid> result = await createUserHandler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);

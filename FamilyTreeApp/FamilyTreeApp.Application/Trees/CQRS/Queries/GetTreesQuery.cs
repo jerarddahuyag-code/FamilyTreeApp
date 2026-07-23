@@ -7,7 +7,7 @@ namespace FamilyTreeApp.Application.Trees.CQRS.Queries;
 
 public record GetTreesQuery
 {
-    public required bool IncludeDeleted { get; init; }
+    public required bool IncludePrivate { get; init; }
 }
 
 public record GetTreesQueryResponse
@@ -29,7 +29,8 @@ public class GetTreesQueryHandler(
     public async Task<Result<GetTreesQueryResponse>> HandleAsync(GetTreesQuery query, CancellationToken cancellationToken)
     {
         List<Tree> trees = await context.Trees
-            .Where(t => query.IncludeDeleted || t.DeletedAt == null)
+            .Where(t => (query.IncludePrivate || t.IsPublic)
+                && t.DeletedAt == null)
             .ToListAsync(cancellationToken);
         var response = new GetTreesQueryResponse
         {

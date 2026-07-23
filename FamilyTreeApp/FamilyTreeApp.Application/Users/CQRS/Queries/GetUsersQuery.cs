@@ -44,7 +44,8 @@ public class GetUsersQueryHandler(
     public async Task<Result<GetUsersQueryResponse>> HandleAsync(GetUsersQuery query, CancellationToken cancellationToken)
     {
         List<User> users = await context.Users
-            .Where(u => query.IncludePrivate || u.IsPublic)
+            .Where(u => (query.IncludePrivate || u.IsPublic)
+                && u.DeletedAt == null)
             .ToListAsync(cancellationToken);
 
         var response = new GetUsersQueryResponse
