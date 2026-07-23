@@ -16,6 +16,7 @@ public static class DomainErrors
         public readonly static Error InvalidTreeName = new("Tree.InvalidName", "The provided tree name is invalid.", ErrorType.Validation);
         public readonly static Error InvalidTreeRole = new("Tree.InvalidRole", "The provided tree role is invalid.", ErrorType.Validation);
         public readonly static Error TreeDeleted = new("Tree.Delete", "The Tree has been deleted.", ErrorType.Conflict);
+        public readonly static Error TreeAccessNotFound = new("Tree.AccessNotFound", "The specified tree access was not found.", ErrorType.NotFound);
     }
 
     public static class ExternalLoginErrors

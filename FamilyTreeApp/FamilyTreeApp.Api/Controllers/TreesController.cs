@@ -69,4 +69,29 @@ public class TreesController : ApiControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("{treeId:guid}/access/{userId:guid}")]
+    public async Task<IActionResult> AddTreeAccess(Guid treeId, Guid userId, [FromBody] AddTreeAccessCommand request, [FromServices] ICommandHandler<AddTreeAccessCommand, Guid> handler, CancellationToken cancellationToken)
+    {
+        request = request with { TreeId = treeId, UserId = userId };
+        Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{treeId:guid}/access/{userId:guid}")]
+    public async Task<IActionResult> RemoveTreeAccess(Guid treeId, Guid userId, [FromServices] ICommandHandler<RemoveTreeAccessCommand, bool> handler, CancellationToken cancellationToken)
+    {
+        Result<bool> result = await handler.HandleAsync(new RemoveTreeAccessCommand { TreeId = treeId, UserId = userId }, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
 }
