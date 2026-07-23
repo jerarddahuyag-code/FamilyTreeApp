@@ -46,10 +46,10 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> UpdateTree(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, Guid> handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateTree(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, bool> handler, CancellationToken cancellationToken)
     {
         request = request with { TreeId = id };
-        Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
+        Result<bool> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);

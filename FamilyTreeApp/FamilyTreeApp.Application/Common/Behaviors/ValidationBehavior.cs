@@ -5,13 +5,13 @@ using FluentValidation.Results;
 
 namespace FamilyTreeApp.Application.Common.Behaviors;
 
-public sealed class ValidationPipelineBehavior<TCommand, TResult>(
-    ICommandHandler<TCommand, TResult> innerHandler,
-    IEnumerable<IValidator<TCommand>> validators)
-    : ICommandHandler<TCommand, TResult>
+public sealed class ValidationPipelineBehavior<TRequest, TResponse>(
+    ICommandHandler<TRequest, TResponse> innerHandler,
+    IEnumerable<IValidator<TRequest>> validators) 
+    : ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
-    public async Task<Result<TResult>> HandleAsync(
-        TCommand command,
+    public async Task<Result<TResponse>> HandleAsync(
+        TRequest command,
         CancellationToken cancellationToken = default)
     {
         if (!validators.Any())
@@ -19,7 +19,7 @@ public sealed class ValidationPipelineBehavior<TCommand, TResult>(
             return await innerHandler.HandleAsync(command, cancellationToken);
         }
 
-        var context = new ValidationContext<TCommand>(command);
+        var context = new ValidationContext<TRequest>(command);
         ValidationResult[] validationResults = await Task.WhenAll(
             validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
@@ -31,7 +31,7 @@ public sealed class ValidationPipelineBehavior<TCommand, TResult>(
         if (failures.Count != 0)
         {
             var errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
-            return Result.Failure<TResult>(Error.Validation);
+            return Result.Failure<TResponse>(Error.Validation);
         }
 
         return await innerHandler.HandleAsync(command, cancellationToken);

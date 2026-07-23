@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
-public record UpdateProfileCommand
+public record UpdateProfileCommand : IRequest<bool>
 {
     public Guid UserId { get; init; }
 
@@ -32,9 +32,9 @@ public record UpdateProfileCommand
 public class UpdateProfileCommandHandler(
     IApplicationDbContext context,
     IUnitOfWork unitOfWork)
-    : ICommandHandler<UpdateProfileCommand, Guid>
+    : ICommandHandler<UpdateProfileCommand, bool>
 {
-    public async Task<Result<Guid>> HandleAsync(UpdateProfileCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> HandleAsync(UpdateProfileCommand command, CancellationToken cancellationToken = default)
     {
         User? user = await context.Users
             .Where(u => u.DeletedAt == null)
@@ -42,7 +42,7 @@ public class UpdateProfileCommandHandler(
 
         if (user is null)
         {
-            return Result.Failure<Guid>(DomainErrors.UserErrors.UserNotFound);
+            return Result.Failure<bool>(DomainErrors.UserErrors.UserNotFound);
         }
 
         ProfileInfo current = user.ProfileInfo ?? new ProfileInfo();
@@ -60,7 +60,7 @@ public class UpdateProfileCommandHandler(
 
         if (result.IsFailure)
         {
-            return Result.Failure<Guid>(result.Error);
+            return Result.Failure<bool>(result.Error);
         }
 
         if (command.IsPublic is true)
@@ -74,12 +74,12 @@ public class UpdateProfileCommandHandler(
 
         if (result.IsFailure)
         {
-            return Result.Failure<Guid>(result.Error);
+            return Result.Failure<bool>(result.Error);
         }
 
         context.Users.Update(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(user.UserId);
+        return Result.Success(true);
     }
 }

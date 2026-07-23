@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Queries;
 
-public record GetTreeByIdQuery
+public record GetTreeByIdQuery : IRequest<GetTreeByIdQueryResponse>
 {
     public required Guid TreeId { get; init; }
 }

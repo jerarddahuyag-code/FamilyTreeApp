@@ -4,7 +4,7 @@ using FamilyTreeApp.Domain.Trees.Entities;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
-public record CreateTreeCommand
+public record CreateTreeCommand : IRequest<Guid>
 {
     public required string Name { get; init; }
 

@@ -5,7 +5,7 @@ using FamilyTreeApp.Domain.Trees.Entities;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
-public record DeleteTreeCommand
+public record DeleteTreeCommand : IRequest<bool>
 {
     public required Guid TreeId { get; init; }
 }

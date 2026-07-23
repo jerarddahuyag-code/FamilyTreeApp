@@ -5,7 +5,7 @@ using FamilyTreeApp.Domain.Users.Entities;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
-public record DeleteUserCommand
+public record DeleteUserCommand : IRequest<bool>
 {
     public required Guid UserId { get; init; }
 }

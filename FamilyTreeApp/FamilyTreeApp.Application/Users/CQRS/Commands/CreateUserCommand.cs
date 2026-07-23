@@ -6,7 +6,7 @@ using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
-public record CreateUserCommand
+public record CreateUserCommand : IRequest<Guid>
 {
     public required string Email { get; init; }
 

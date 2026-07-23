@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Queries;
 
-public record GetUserByIdQuery
+public record GetUserByIdQuery : IRequest<GetUserByIdQueryResponse>
 {
     public required Guid UserId { get; init; }
 }
@@ -35,9 +35,9 @@ public record GetUserByIdQueryResponse
 
 public class GetUserByIdHandler(
     IApplicationDbContext context)
-    : IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse?>
+    : IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse>
 {
-    public async Task<Result<GetUserByIdQueryResponse?>> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GetUserByIdQueryResponse>> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken)
     {
         User? user = await context.Users
             .Where(u => u.DeletedAt == null)
@@ -45,7 +45,7 @@ public class GetUserByIdHandler(
 
         if (user is null)
         {
-            return Result.Failure<GetUserByIdQueryResponse?>(DomainErrors.UserErrors.UserNotFound);
+            return Result.Failure<GetUserByIdQueryResponse>(DomainErrors.UserErrors.UserNotFound);
         }
 
         return Result.Success(new GetUserByIdQueryResponse

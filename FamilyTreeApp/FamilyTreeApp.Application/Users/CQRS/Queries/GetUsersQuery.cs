@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Queries;
 
-public record GetUsersQuery
+public record GetUsersQuery : IRequest<GetUsersQueryResponse>
 {
     public required bool IncludePrivate { get; init; }
 }

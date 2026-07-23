@@ -24,7 +24,7 @@ public class UsersController : ApiControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetUserById(Guid id, [FromServices] IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> getUserByIdHandler, CancellationToken cancellationToken)
     {
-        Result<GetUserByIdQueryResponse>? result = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
+        Result<GetUserByIdQueryResponse> result = await getUserByIdHandler.HandleAsync(new GetUserByIdQuery { UserId = id }, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
-public record UpdateTreeCommand
+public record UpdateTreeCommand : IRequest<bool>
 {
     public Guid TreeId { get; init; }
 
@@ -18,26 +18,26 @@ public record UpdateTreeCommand
 public class UpdateTreeCommandHandler(
     IApplicationDbContext context,
     IUnitOfWork unitOfWork)
-    : ICommandHandler<UpdateTreeCommand, Guid>
+    : ICommandHandler<UpdateTreeCommand, bool>
 {
-    public async Task<Result<Guid>> HandleAsync(UpdateTreeCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> HandleAsync(UpdateTreeCommand command, CancellationToken cancellationToken = default)
     {
         Tree? existing = await context.Trees
             .Where(t => t.DeletedAt == null)
             .FirstOrDefaultAsync(t => t.TreeId == command.TreeId, cancellationToken);
         if (existing is null)
         {
-            return Result.Failure<Guid>(DomainErrors.TreeErrors.TreeNotFound);
+            return Result.Failure<bool>(DomainErrors.TreeErrors.TreeNotFound);
         }
 
         Result result = existing.UpdateDetails(command.Name ?? existing.Name, command.Description ?? existing.Description);
         if (result.IsFailure)
         {
-            return Result.Failure<Guid>(result.Error);
+            return Result.Failure<bool>(result.Error);
         }
 
         context.Trees.Update(existing);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success(existing.TreeId);
+        return Result.Success(true);
     }
 }

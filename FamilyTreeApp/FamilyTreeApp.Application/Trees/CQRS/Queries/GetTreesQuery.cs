@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Queries;
 
-public record GetTreesQuery
+public record GetTreesQuery : IRequest<GetTreesQueryResponse>
 {
     public required bool IncludePrivate { get; init; }
 }
