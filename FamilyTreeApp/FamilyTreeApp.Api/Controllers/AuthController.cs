@@ -1,7 +1,5 @@
 using System.Security.Claims;
 using FamilyTreeApp.Application.Users.CQRS.Commands;
-using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -15,9 +13,7 @@ namespace FamilyTreeApp.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(
     IConfiguration config,
-    IApplicationDbContext db,
-    IUnitOfWork uow,
-    ICommandHandler<CreateUserCommand, Guid> createUserHandler) : ControllerBase
+    ICommandHandler<ProcessExternalLoginCommand, Guid> processExternalLoginHandler) : ApiControllerBase
 {
 
     [HttpGet("login")]
@@ -62,50 +58,24 @@ public class AuthController(
             return BadRequest("Missing required claims from provider.");
         }
 
-        var existingLogin = await db.ExternalLogins
-            .FirstOrDefaultAsync(x => x.Provider == provider && x.ProviderKey == providerKey, cancellationToken);
-
-        Guid userId;
-        if (existingLogin != null)
+        var processCmd = new ProcessExternalLoginCommand
         {
-            userId = existingLogin.UserId;
-        }
-        else
+            Provider = provider,
+            ProviderKey = providerKey,
+            Email = email,
+            Name = name,
+            GivenName = givenName,
+            FamilyName = familyName,
+            Picture = picture
+        };
+
+        var processResult = await processExternalLoginHandler.HandleAsync(processCmd, cancellationToken);
+        if (processResult.IsFailure)
         {
-            var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
-            if (existingUser != null)
-            {
-                userId = existingUser.UserId;
-            }
-            else
-            {
-                var createUserCmd = new CreateUserCommand
-                {
-                    Email = email,
-                    FirstName = givenName ?? (name?.Split(' ').FirstOrDefault()),
-                    LastName = familyName ?? (name?.Split(' ').Skip(1).FirstOrDefault()),
-                    AvatarUrl = picture,
-                    IsPublic = true
-                };
-
-                var createResult = await createUserHandler.HandleAsync(createUserCmd, cancellationToken);
-                if (createResult.IsFailure)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError, createResult.Error);
-                }
-
-                userId = createResult.Value;
-            }
-
-            var createExternalResult = ExternalLogin.Create(Guid.NewGuid(), userId, provider, providerKey);
-            if (createExternalResult.IsFailure)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, createExternalResult.Error);
-            }
-
-            await db.ExternalLogins.AddAsync(createExternalResult.Value, cancellationToken);
-            await uow.SaveChangesAsync(cancellationToken);
+            return HandleFailure(processResult);
         }
+
+        Guid userId = processResult.Value;
 
         var claims = new List<Claim>
         {
