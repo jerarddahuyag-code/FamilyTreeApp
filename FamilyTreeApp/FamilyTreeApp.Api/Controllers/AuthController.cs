@@ -13,7 +13,7 @@ namespace FamilyTreeApp.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(
     IConfiguration config,
-    ICommandHandler<ProcessExternalLoginCommand, Guid> processExternalLoginHandler) : ApiControllerBase
+    ICommandHandler<ProcessExternalLoginCommand, bool> processExternalLoginHandler) : ApiControllerBase
 {
 
     [HttpGet("login")]
@@ -40,56 +40,22 @@ public class AuthController(
         }
 
         var externalPrincipal = authResult.Principal;
-        string provider = "Google";
-        string? providerKey = externalPrincipal.FindFirst("sub")?.Value
-                              ?? externalPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        string? email = externalPrincipal.FindFirst(ClaimTypes.Email)?.Value
-                        ?? externalPrincipal.FindFirst("email")?.Value;
+        var processResult = await processExternalLoginHandler.HandleAsync(new ProcessExternalLoginCommand
+            {
+                Provider = "Google",
+                ProviderKey = externalPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty,
+                Email = externalPrincipal.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty,
+                Name = externalPrincipal.FindFirst(ClaimTypes.Name)?.Value,
+                GivenName = externalPrincipal.FindFirst("given_name")?.Value,
+                FamilyName = externalPrincipal.FindFirst("family_name")?.Value,
+                Picture = externalPrincipal.FindFirst("picture")?.Value
+            }, cancellationToken);
 
-        string? name = externalPrincipal.FindFirst(ClaimTypes.Name)?.Value
-                       ?? externalPrincipal.FindFirst("name")?.Value;
-        string? givenName = externalPrincipal.FindFirst("given_name")?.Value;
-        string? familyName = externalPrincipal.FindFirst("family_name")?.Value;
-        string? picture = externalPrincipal.FindFirst("picture")?.Value;
-
-        if (string.IsNullOrEmpty(providerKey) || string.IsNullOrEmpty(email))
-        {
-            return BadRequest("Missing required claims from provider.");
-        }
-
-        var processCmd = new ProcessExternalLoginCommand
-        {
-            Provider = provider,
-            ProviderKey = providerKey,
-            Email = email,
-            Name = name,
-            GivenName = givenName,
-            FamilyName = familyName,
-            Picture = picture
-        };
-
-        var processResult = await processExternalLoginHandler.HandleAsync(processCmd, cancellationToken);
         if (processResult.IsFailure)
         {
             return HandleFailure(processResult);
         }
-
-        Guid userId = processResult.Value;
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Email, email),
-        };
-        if (!string.IsNullOrEmpty(name)) {
-            claims.Add(new(ClaimTypes.Name, name));
-        }
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
         // redirect to frontend URL (we stored it in Items on the Challenge)
         string frontendRedirectUri = authResult.Properties?.Items.TryGetValue("frontend_redirect", out var uri) is true

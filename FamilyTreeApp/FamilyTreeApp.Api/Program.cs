@@ -4,15 +4,16 @@ using FamilyTreeApp.Infrastructure;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Register layered services
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -52,20 +53,28 @@ builder.Services.AddAuthentication(options =>
         options.ClaimActions.MapJsonKey("family_name", "family_name");
 
         options.CallbackPath = "/signin-google";
-
-        // Ensure the nonce/correlation cookies are usable in cross-origin scenarios
-        //var securePolicy = builder.Environment.IsDevelopment()
-        //    ? CookieSecurePolicy.SameAsRequest
-        //    : CookieSecurePolicy.Always;
-
-        //options.NonceCookie.SameSite = SameSiteMode.None;
-        //options.NonceCookie.SecurePolicy = securePolicy;
-
-        //options.CorrelationCookie.SameSite = SameSiteMode.None;
-        //options.CorrelationCookie.SecurePolicy = securePolicy;
     });
 
 builder.Services.AddEndpointsApiExplorer();
+// Swagger/OpenAPI (Swashbuckle)
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "FamilyTreeApp API", Version = "v1" });
+    
+    c.AddSecurityDefinition("OIDC", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OpenIdConnect,
+        OpenIdConnectUrl = new Uri("https://accounts.google.com/.well-known/openid-configuration")
+    });
+
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("OIDC", document),
+            new List<string> { "openid", "profile", "email" }
+        }
+    });
+});
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
@@ -74,6 +83,20 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Enable Swagger middleware and UI
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FamilyTreeApp API V1");
+    c.RoutePrefix = "swagger"; // serve at /swagger
+    // Configure Swagger UI to use Google OIDC client from configuration
+    c.OAuthClientId(builder.Configuration["Authentication__Google__ClientId"]);
+    c.OAuthClientSecret(builder.Configuration["Authentication__Google__ClientSecret"]);
+    c.OAuthAppName("FamilyTreeApp API - Swagger");
+    // Use PKCE for the authorization code flow (recommended)
+    c.OAuthUsePkce();
+});
 
 app.UseExceptionHandler();
 

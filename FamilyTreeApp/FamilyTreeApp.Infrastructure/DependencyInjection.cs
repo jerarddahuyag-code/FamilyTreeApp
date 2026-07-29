@@ -1,6 +1,7 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Infrastructure.Persistence;
+using FamilyTreeApp.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ public static class DependencyInjection
             provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

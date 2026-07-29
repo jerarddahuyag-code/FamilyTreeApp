@@ -1,10 +1,11 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
-public record ProcessExternalLoginCommand : IRequest<Guid>
+public record ProcessExternalLoginCommand : IRequest<bool>
 {
     public required string Provider { get; init; }
     public required string ProviderKey { get; init; }
@@ -17,65 +18,59 @@ public record ProcessExternalLoginCommand : IRequest<Guid>
 
 public class ProcessExternalLoginCommandHandler(
     IApplicationDbContext context,
+    IAuthService authService,
     ICommandHandler<CreateUserCommand, Guid> createUserHandler,
     ICommandHandler<CreateExternalLoginCommand, Guid> createExternalLoginHandler)
-    : ICommandHandler<ProcessExternalLoginCommand, Guid>
+    : ICommandHandler<ProcessExternalLoginCommand, bool>
 {
-    public async Task<Result<Guid>> HandleAsync(ProcessExternalLoginCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> HandleAsync(ProcessExternalLoginCommand command, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(command.ProviderKey) || string.IsNullOrWhiteSpace(command.Email))
         {
-            return Result.Failure<Guid>(Domain.Common.Errors.DomainErrors.ExternalLoginErrors.InvalidProviderKey);
+            return Result.Failure<bool>(Domain.Common.Errors.DomainErrors.ExternalLoginErrors.InvalidProviderKey);
         }
 
-        var existingLogin = await context.ExternalLogins
-            .FirstOrDefaultAsync(x => x.Provider == command.Provider && x.ProviderKey == command.ProviderKey, cancellationToken);
-
-        Guid userId;
-        if (existingLogin != null)
-        {
-            return Result.Success(existingLogin.UserId);
-        }
-
+        var existingLogin = await context.ExternalLogins.FirstOrDefaultAsync(x => x.Provider == command.Provider && x.ProviderKey == command.ProviderKey, cancellationToken);
         var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == command.Email, cancellationToken);
-        if (existingUser != null)
+        Guid userId = existingUser?.UserId ?? Guid.Empty;
+        
+        if (existingUser == null)
         {
-            userId = existingUser.UserId;
-        }
-        else
-        {
-            var createUserCmd = new CreateUserCommand
-            {
-                Email = command.Email,
-                FirstName = command.GivenName ?? (command.Name?.Split(' ').FirstOrDefault()),
-                LastName = command.FamilyName ?? (command.Name?.Split(' ').Skip(1).FirstOrDefault()),
-                AvatarUrl = command.Picture,
-                IsPublic = true
-            };
+            var createResult = await createUserHandler.HandleAsync(new CreateUserCommand
+                {
+                    Email = command.Email,
+                    FirstName = command.GivenName ?? (command.Name?.Split(' ').FirstOrDefault()),
+                    LastName = command.FamilyName ?? (command.Name?.Split(' ').Skip(1).FirstOrDefault()),
+                    AvatarUrl = command.Picture,
+                    IsPublic = true
+                }, cancellationToken);
 
-            var createResult = await createUserHandler.HandleAsync(createUserCmd, cancellationToken);
             if (createResult.IsFailure)
             {
-                return Result.Failure<Guid>(createResult.Error);
+                return Result.Failure<bool>(createResult.Error);
             }
 
             userId = createResult.Value;
         }
 
-        var externalCmd = new CreateExternalLoginCommand
+        if (existingLogin == null)
         {
-            ExternalLoginId = Guid.NewGuid(),
-            UserId = userId,
-            Provider = command.Provider,
-            ProviderKey = command.ProviderKey
-        };
+            var createExternalResult = await createExternalLoginHandler.HandleAsync(new CreateExternalLoginCommand
+            {
+                ExternalLoginId = Guid.NewGuid(),
+                UserId = userId,
+                Provider = command.Provider,
+                ProviderKey = command.ProviderKey
+            }, cancellationToken);
 
-        var createExternalResult = await createExternalLoginHandler.HandleAsync(externalCmd, cancellationToken);
-        if (createExternalResult.IsFailure)
-        {
-            return Result.Failure<Guid>(createExternalResult.Error);
+            if (createExternalResult.IsFailure)
+            {
+                return Result.Failure<bool>(createExternalResult.Error);
+            }
         }
 
-        return Result.Success(userId);
+        await authService.SignInAsync(userId, command.Email, command.Name);
+
+        return Result.Success(true);
     }
 }

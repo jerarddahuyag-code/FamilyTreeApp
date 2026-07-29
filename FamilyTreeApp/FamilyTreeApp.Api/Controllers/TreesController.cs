@@ -1,10 +1,12 @@
 using FamilyTreeApp.Application.Trees.CQRS.Commands;
 using FamilyTreeApp.Application.Trees.CQRS.Queries;
 using FamilyTreeApp.Domain.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeApp.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TreesController : ApiControllerBase
