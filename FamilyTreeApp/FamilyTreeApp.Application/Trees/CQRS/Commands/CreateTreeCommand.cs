@@ -27,6 +27,7 @@ public class CreateTreeCommandHandler(
         }
 
         Tree tree = result.Value;
+        
         await context.Trees.AddAsync(tree, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(tree.TreeId);

@@ -31,7 +31,7 @@ public class ProcessExternalLoginCommandHandler(
         }
 
         var existingLogin = await context.ExternalLogins.FirstOrDefaultAsync(x => x.Provider == command.Provider && x.ProviderKey == command.ProviderKey, cancellationToken);
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == command.Email, cancellationToken);
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == command.Email && u.DeletedAt == null, cancellationToken);
         Guid userId = existingUser?.UserId ?? Guid.Empty;
         
         if (existingUser == null)

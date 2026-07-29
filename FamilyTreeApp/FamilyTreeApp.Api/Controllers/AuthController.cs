@@ -57,7 +57,6 @@ public class AuthController(
             return HandleFailure(processResult);
         }
 
-        // redirect to frontend URL (we stored it in Items on the Challenge)
         string frontendRedirectUri = authResult.Properties?.Items.TryGetValue("frontend_redirect", out var uri) is true
             ? uri!
             : config["Frontend:RedirectUri"] ?? "/";
