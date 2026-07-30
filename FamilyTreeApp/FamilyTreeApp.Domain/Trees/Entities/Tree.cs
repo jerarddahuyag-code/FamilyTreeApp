@@ -19,9 +19,9 @@ public class Tree : AggregateRoot
 
     public DateTime? DeletedAt { get; private set; }
 
-    public Tree() { }
+    private Tree() { }
 
-    public Tree(Guid treeId, string name, string description, bool isPublic)
+    private Tree(Guid treeId, string name, string description, bool isPublic)
     {
         TreeId = treeId;
         Name = name;

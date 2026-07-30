@@ -24,4 +24,18 @@ public static class DomainErrors
         public readonly static Error InvalidProvider = new("ExternalLogin.InvalidProvider", "The provided external login provider is invalid.", ErrorType.Validation);
         public readonly static Error InvalidProviderKey = new("ExternalLogin.InvalidProviderKey", "The provided external login provider key is invalid.", ErrorType.Validation);
     }
+
+    public static class FamilyMemberErrors
+    {
+        public readonly static Error FamilyMemberNotFound = new("FamilyMember.NotFound", "The family member was not found.", ErrorType.NotFound);
+        public readonly static Error InvalidProfile = new("FamilyMember.InvalidProfile", "The provided profile information is invalid.", ErrorType.Validation);
+        public readonly static Error InvalidVisibilityStatus = new("FamilyMember.InvalidVisibilityStatus", "The provided visibility status is invalid.", ErrorType.Validation);
+        public readonly static Error FamilyMemberDeleted = new("FamilyMember.Deleted", "The family member has been deleted.", ErrorType.Conflict);
+        public readonly static Error InvalidVisibilityTransition = new("FamilyMember.InvalidVisibilityTransition", "The requested visibility transition is invalid.", ErrorType.Validation);
+    }
+
+    public static class FamilyMemberRelationshipErrors
+    {
+        public readonly static Error SameFamilyMembers = new("FamilyMemberRelationship.SameFamilyMembers", "The provided family members are the same.", ErrorType.Validation);
+    }
 }

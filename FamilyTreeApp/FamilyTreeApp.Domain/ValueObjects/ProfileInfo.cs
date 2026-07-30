@@ -17,4 +17,12 @@ public record ProfileInfo
     public Gender? Gender { get; init; }
 
     public string? Bio { get; init; }
+
+    public static ProfileInfo CreateAnonymous()
+    {
+        return new ProfileInfo
+        {
+            FirstName = "Anonymous"
+        };
+    }
 }
