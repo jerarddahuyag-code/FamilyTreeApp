@@ -11,6 +11,8 @@ public record CreateTreeCommand : IRequest<Guid>
     public string? Description { get; init; }
 
     public required bool IsPublic { get; init; }
+
+    public required Guid OwnerId { get; init; }
 }
 
 public class CreateTreeCommandHandler(
@@ -27,8 +29,17 @@ public class CreateTreeCommandHandler(
         }
 
         Tree tree = result.Value;
-        
+
         await context.Trees.AddAsync(tree, cancellationToken);
+
+        Result<TreeRbac> rbacResult = TreeRbac.Create(Guid.NewGuid(), tree.TreeId, command.OwnerId, Domain.Trees.Enums.TreeRole.Owner);
+        if (rbacResult.IsFailure)
+        {
+            return Result.Failure<Guid>(rbacResult.Error);
+        }
+
+        await context.TreeRbacs.AddAsync(rbacResult.Value, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(tree.TreeId);
     }

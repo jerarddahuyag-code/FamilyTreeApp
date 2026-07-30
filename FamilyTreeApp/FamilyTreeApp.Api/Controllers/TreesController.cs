@@ -3,6 +3,7 @@ using FamilyTreeApp.Application.Trees.CQRS.Queries;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Api.Controllers;
 
@@ -38,6 +39,9 @@ public class TreesController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTree(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
     {
+        // Set the owner id to the currently authenticated user
+        request = request with { OwnerId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) };
+
         Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
         {
