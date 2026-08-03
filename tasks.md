@@ -1,7 +1,7 @@
 # FamilyTreeApp — Implementation Tasks
 
 > **Legend:** 🔴 Not started | 🟡 In progress | 🟢 Complete | ⏭ Deferred
-> **Last updated:** Phase 2 Trees + RBAC complete
+> **Last updated:** Phase 3 Roster complete
 
 ---
 
@@ -442,40 +442,40 @@ builder.Services.AddAuthorization(options =>
 
 ---
 
-### TASK-3.1 — Domain: `FamilyMember` entity 🔴
+### TASK-3.1 — Domain: `FamilyMember` entity 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Entities/FamilyMember.cs`
 
-**Properties:** `Guid Id`, `Guid TreeId`, `Guid? ClaimedByUserId`, `ProfileInfo PersonalInfo`,
+**Properties:** `Guid FamilyMemberId`, `Guid TreeId`, `Guid? ClaimedByUserId`, `ProfileInfo ProfileInfo`,
 `VisibilityStatus VisibilityStatus` (default `Hidden`), `DateTime CreatedAt`, `DateTime UpdatedAt`
 
 **Domain methods:**
-- `Result CanTransitionTo(VisibilityStatus target)` — validates state machine rules (see R-3.2)
-- `Result TransitionTo(VisibilityStatus target)` — calls `CanTransitionTo`, mutates state on success
-- `static Result<FamilyMember> Create(Guid treeId, ProfileInfo personalInfo)` — factory
+- `Result CanTransitionToVisibility(VisibilityStatus target)` — validates state machine rules (see R-3.2)
+- `Result TransitionToVisbility(VisibilityStatus target)` — calls `CanTransitionToVisibility`, mutates state on success
+- `static Result<FamilyMember> Create(Guid familyMemberId, Guid treeId, Guid? claimedByUserId, VisibilityStatus visibilityStatus, ProfileInfo profileInfo)` — factory
 
 ---
 
-### TASK-3.2 — Domain: `FamilyMemberRelationship` entity 🔴
+### TASK-3.2 — Domain: `FamilyMemberRelationship` entity 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Entities/FamilyMemberRelationship.cs`
 
-**Properties:** `Guid Id`, `Guid TreeId`, `Guid BaseMemberId`, `Guid TargetMemberId`,
+**Properties:** `Guid FamilyMemberRelationshipId`, `Guid TreeId`, `Guid BaseFamilyMemberId`, `Guid RelatedFamilyMemberId`,
 `RelationshipType RelationshipType`, `DateTime CreatedAt`, `DateTime UpdatedAt`
 
-**Constraint:** Composite unique `(BaseMemberId, TargetMemberId, RelationshipType)` — enforced at DB level.
+**Constraint:** Composite unique `(BaseFamilyMemberId, RelatedFamilyMemberId, RelationshipType)` — enforced at DB level.
 
 ---
 
-### TASK-3.3 — Domain: Enums 🔴
+### TASK-3.3 — Domain: Enums 🟢
 
 **Files:**
-- `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Enums/VisibilityStatus.cs` — `Hidden`, `PendingApproval`, `Visible`
-- `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Enums/RelationshipType.cs` — `Parent`, `Spouse`, `Sibling`
+- `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Enums/VisibilityStatus.cs` — `Hidden`, `Pending`, `Visible`
+- `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Entities/RelationshipType.cs` — `Parent`, `Child`, `Sibling`, `Spouse`
 
 ---
 
-### TASK-3.4 — Domain: Repository interfaces 🔴
+### TASK-3.4 — Domain: Repository interfaces 🟢
 
 **Files:**
 - `FamilyTreeApp/FamilyTreeApp.Domain/Roster/Interfaces/IFamilyMemberRepository.cs`
@@ -483,27 +483,27 @@ builder.Services.AddAuthorization(options =>
 
 ---
 
-### TASK-3.5 — Domain: `DomainErrors` — Roster entries 🔴
+### TASK-3.5 — Domain: `DomainErrors` — Roster entries 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Domain/Common/Errors/DomainErrors.cs`
 
 **Add:**
 ```csharp
-public static class Visibility
+public static class FamilyMemberErrors
 {
-	public static readonly Error InvalidTransition = new("Visibility.InvalidTransition", "The requested visibility transition is not permitted.");
+	public static readonly Error InvalidVisibilityTransition = new("FamilyMember.InvalidVisibilityTransition", "The requested visibility transition is not permitted.");
 }
 
-public static class Roster
+public static class FamilyMemberRelationshipErrors
 {
-	public static readonly Error MemberTreeMismatch = new("Roster.MemberTreeMismatch", "Both family members must belong to the same tree.");
-	public static readonly Error MemberNotFound     = new("Roster.MemberNotFound",     "The specified family member does not exist.");
+	public static readonly Error SameFamilyMembers = new("FamilyMemberRelationship.SameFamilyMembers", "Both family members cannot be the same.");
+	public static readonly Error MemberTreeMismatch = new("FamilyMemberRelationship.MemberTreeMismatch", "Both family members must belong to the same tree.");
 }
 ```
 
 ---
 
-### TASK-3.6 — Application: Roster commands 🔴
+### TASK-3.6 — Application: Roster commands 🟢
 
 **Files:**
 ```
@@ -521,7 +521,7 @@ FamilyTreeApp.Application/Roster/Commands/RemoveRelationship/...
 
 ---
 
-### TASK-3.7 — Application: Roster queries 🔴
+### TASK-3.7 — Application: Roster queries 🟢
 
 **Files:**
 ```
@@ -537,7 +537,7 @@ anonymous masking (R-3.5).
 
 ---
 
-### TASK-3.8 — Infrastructure: EF Core configurations + repositories 🔴
+### TASK-3.8 — Infrastructure: EF Core configurations + repositories 🟢
 
 **Files:**
 ```
@@ -553,7 +553,7 @@ FamilyTreeApp.Infrastructure/Persistence/Repositories/FamilyMemberRelationshipRe
 
 ---
 
-### TASK-3.9 — API: `RosterController` 🔴
+### TASK-3.9 — API: `RosterController` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Api/Controllers/RosterController.cs`
 
@@ -571,7 +571,7 @@ FamilyTreeApp.Infrastructure/Persistence/Repositories/FamilyMemberRelationshipRe
 
 ---
 
-### TASK-3.10 — Tests: Roster unit tests 🔴
+### TASK-3.10 — Tests: Roster unit tests 🟢
 
 **Files:**
 ```

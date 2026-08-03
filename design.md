@@ -5,9 +5,7 @@
 
 ---
 
-## 1. Solution Structure
-
-### 1.1 Unit Testing Strategy
+## 1. Unit Testing Strategy
 
 Unit tests focus on domain invariants and command-handler business behavior. They cover:
 - Domain entity creation and validation rules (e.g., invalid email or tree names)
@@ -18,7 +16,7 @@ These tests avoid infrastructure-specific concerns such as cancellation-token pr
 
 ---
 
-## 2. Project Dependency Graph
+## 2. Solution Structure
 
 ```
 FamilyTreeApp/                              ← Solution root

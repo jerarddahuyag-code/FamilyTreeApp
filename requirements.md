@@ -2,7 +2,7 @@
 
 > **Status:** Living document. Updated at the end of each phase.
 > **Notation:** [EARS](https://alistairmavin.com/ears/) — Easy Approach to Requirements Syntax
-> **Last updated:** Phase 2 Trees + RBAC complete
+> **Last updated:** Phase 3 Roster complete
 
 ---
 
@@ -131,14 +131,14 @@ defaulting to `Hidden`.
 
 | From | To | Trigger |
 |---|---|---|
-| `Hidden` | `PendingApproval` | Member requests visibility |
-| `PendingApproval` | `Visible` | Admin approves |
-| `PendingApproval` | `Hidden` | Admin rejects |
+| `Hidden` | `Pending` | Member requests visibility |
+| `Pending` | `Visible` | Admin approves |
+| `Pending` | `Hidden` | Admin rejects |
 | `Visible` | `Hidden` | Admin revokes |
 
 ### R-3.3 Visibility State Machine — Invalid Transitions
 **IF** a requested visibility transition is not in the permitted set,
-**THE SYSTEM SHALL** return `Result.Failure(DomainErrors.Visibility.InvalidTransition)`
+**THE SYSTEM SHALL** return `Result.Failure(DomainErrors.FamilyMemberErrors.InvalidVisibilityTransition)`
 without mutating the entity state.
 
 ### R-3.4 Read-Through Profile Merge
@@ -156,7 +156,7 @@ the member's personal data.
 ### R-3.6 Relationship Same-Tree Constraint
 **WHEN** a relationship is created between two family members,
 **THE SYSTEM SHALL** verify both members belong to the same tree
-and return `Result.Failure(DomainErrors.Roster.MemberTreeMismatch)`
+and return `Result.Failure(DomainErrors.FamilyMemberRelationshipErrors.MemberTreeMismatch)`
 if they do not.
 
 ---
@@ -211,6 +211,6 @@ that fan-outs notifications to all registered `INotificationHandler<T>` instance
 | `ITransactionalCommand` handler throws exception | `TransactionBehavior` rolls back transaction and re-throws |
 | `ITransactionalCommand` handler returns `Result.Failure` | `TransactionBehavior` rolls back; `LoggingBehavior` logs Warning |
 | Family member claimed by a deleted user | `ClaimedByUserId` FK is `SET NULL`; member falls back to its own `ProfileInfo` |
-| Visibility transition from `Visible` to `PendingApproval` | Domain returns `Result.Failure(DomainErrors.Visibility.InvalidTransition)` |
-| Relationship between members of different trees | Application returns `Result.Failure(DomainErrors.Roster.MemberTreeMismatch)` |
+| Visibility transition from `Visible` to `Pending` | Domain returns `Result.Failure(DomainErrors.FamilyMemberErrors.InvalidVisibilityTransition)` |
+| Relationship between members of different trees | Application returns `Result.Failure(DomainErrors.FamilyMemberRelationshipErrors.MemberTreeMismatch)` |
 | CI push with unformatted code | Pipeline fails at format-check step before build or tests run |

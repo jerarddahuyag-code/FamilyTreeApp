@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.ValueObjects;
@@ -8,6 +8,8 @@ namespace FamilyTreeApp.Domain.Roster.Entities;
 public class FamilyMember : AggregateRoot
 {
     public Guid FamilyMemberId { get; private set; }
+
+    public Guid TreeId { get; private set; }
 
     public Guid? ClaimedByUserId { get; private set; }
 
@@ -23,16 +25,17 @@ public class FamilyMember : AggregateRoot
 
     private FamilyMember() { }
 
-    private FamilyMember(Guid familyMemberId, Guid? claimedByUserId, VisibilityStatus visibilityStatus, ProfileInfo profileInfo)
+    private FamilyMember(Guid familyMemberId, Guid treeId, Guid? claimedByUserId, VisibilityStatus visibilityStatus, ProfileInfo profileInfo)
     {
         FamilyMemberId = familyMemberId;
+        TreeId = treeId;
         ClaimedByUserId = claimedByUserId;
         ProfileInfo = profileInfo;
         VisibilityStatus = visibilityStatus;
         CreatedAt = UpdatedAt = DateTime.UtcNow;
     }
 
-    public static Result<FamilyMember> Create(Guid familyMemberId, Guid? claimedByUserId, VisibilityStatus visibilityStatus, ProfileInfo profileInfo)
+    public static Result<FamilyMember> Create(Guid familyMemberId, Guid treeId, Guid? claimedByUserId, VisibilityStatus visibilityStatus, ProfileInfo profileInfo)
     {
         if (profileInfo is null)
         {
@@ -44,7 +47,7 @@ public class FamilyMember : AggregateRoot
             return Result.Failure<FamilyMember>(DomainErrors.FamilyMemberErrors.InvalidVisibilityStatus);
         }
 
-        var familyMember = new FamilyMember(familyMemberId, claimedByUserId, visibilityStatus, profileInfo);
+        var familyMember = new FamilyMember(familyMemberId, treeId, claimedByUserId, visibilityStatus, profileInfo);
         return Result.Success(familyMember);
     }
 

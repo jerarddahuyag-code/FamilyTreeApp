@@ -1,4 +1,4 @@
-﻿namespace FamilyTreeApp.Domain.Common.Errors;
+namespace FamilyTreeApp.Domain.Common.Errors;
 
 public static class DomainErrors
 {
@@ -37,5 +37,7 @@ public static class DomainErrors
     public static class FamilyMemberRelationshipErrors
     {
         public readonly static Error SameFamilyMembers = new("FamilyMemberRelationship.SameFamilyMembers", "The provided family members are the same.", ErrorType.Validation);
+        public readonly static Error MemberTreeMismatch = new("FamilyMemberRelationship.MemberTreeMismatch", "Both family members must belong to the same tree.", ErrorType.Validation);
+        public readonly static Error RelationshipNotFound = new("FamilyMemberRelationship.NotFound", "The relationship was not found.", ErrorType.NotFound);
     }
 }

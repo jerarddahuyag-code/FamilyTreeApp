@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Domain.Roster.Entities;
+using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,6 +11,8 @@ public class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyMember>
         builder.ToTable("family_members");
         builder.HasKey(t => t.FamilyMemberId);
         builder.Property(t => t.FamilyMemberId).HasColumnName("family_member_id");
+        builder.Property(t => t.TreeId).HasColumnName("tree_id").IsRequired();
+        builder.Property(t => t.ClaimedByUserId).HasColumnName("claimed_by_user_id");
 
         builder.OwnsOne(u => u.ProfileInfo, p =>
         {

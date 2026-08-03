@@ -1,4 +1,5 @@
 using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TreeRbac> TreeRbacs { get; set; }
 
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
+
+    public DbSet<FamilyMember> FamilyMembers { get; set; }
+
+    public DbSet<FamilyMemberRelationship> FamilyMemberRelationships { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

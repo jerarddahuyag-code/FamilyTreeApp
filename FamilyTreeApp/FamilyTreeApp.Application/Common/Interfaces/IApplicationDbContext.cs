@@ -1,3 +1,4 @@
+using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,10 @@ public interface IApplicationDbContext
     DbSet<TreeRbac> TreeRbacs { get; }
 
     DbSet<ExternalLogin> ExternalLogins { get; }
+
+    DbSet<FamilyMember> FamilyMembers { get; }
+
+    DbSet<FamilyMemberRelationship> FamilyMemberRelationships { get; }
 
     DatabaseFacade Database { get; }
 
