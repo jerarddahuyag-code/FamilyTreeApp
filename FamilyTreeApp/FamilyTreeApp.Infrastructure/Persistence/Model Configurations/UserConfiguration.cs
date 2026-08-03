@@ -15,9 +15,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Email).HasColumnName("email").IsRequired().HasMaxLength(255);
         builder.Property(u => u.IsPublic).HasColumnName("is_public").IsRequired();
         builder.Property(u => u.CreatedAt).HasColumnName("created_at").IsRequired();
-        builder.Property(u => u.UpdatedAt).HasColumnName("updated_at");
-
-        builder.HasIndex(u => u.Email).IsUnique();
+        builder.Property(u => u.UpdatedAt).HasColumnName("updated_at").IsRequired();
 
         builder.OwnsOne(u => u.ProfileInfo, p =>
         {
@@ -29,5 +27,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             p.Property(pi => pi.Gender).HasColumnName("gender").HasMaxLength(50);
             p.Property(pi => pi.Bio).HasColumnName("bio").HasMaxLength(500);
         });
+
+        builder.HasIndex(u => u.Email).IsUnique();
+
+        builder.HasMany(u => u.ExternalLogins)
+            .WithOne()
+            .HasForeignKey(el => el.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -20,5 +20,10 @@ public class TreeConfiguration : IEntityTypeConfiguration<Tree>
         builder.Property(t => t.DeletedAt).HasColumnName("deleted_at");
 
         builder.HasIndex(t => t.Name);
+
+        builder.HasMany(t => t.TreeRbacs)
+            .WithOne(tr => tr.Tree)
+            .HasForeignKey(tr => tr.TreeId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

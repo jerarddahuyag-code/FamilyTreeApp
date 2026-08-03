@@ -14,6 +14,7 @@ public class User : AggregateRoot
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
+    public ICollection<ExternalLogin> ExternalLogins { get; private set; } = [];
 
     private User() { }
 

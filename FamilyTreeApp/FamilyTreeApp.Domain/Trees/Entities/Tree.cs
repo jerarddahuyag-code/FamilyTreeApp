@@ -19,6 +19,8 @@ public class Tree : AggregateRoot
 
     public DateTime? DeletedAt { get; private set; }
 
+    public ICollection<TreeRbac> TreeRbacs { get; private set; } = [];
+
     private Tree() { }
 
     private Tree(Guid treeId, string name, string description, bool isPublic)
