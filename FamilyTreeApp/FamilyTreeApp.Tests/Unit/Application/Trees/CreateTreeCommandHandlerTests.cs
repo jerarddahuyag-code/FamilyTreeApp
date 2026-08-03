@@ -1,9 +1,9 @@
-using FluentAssertions;
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Application.Trees.CQRS.Commands;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Trees.Entities;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -14,10 +14,10 @@ public class CreateTreeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_WithValidCommand_ReturnsSuccess()
     {
-        var context = Substitute.For<IApplicationDbContext>();
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        var treeDbSet = Substitute.For<DbSet<Tree>>();
-        var rbacDbSet = Substitute.For<DbSet<TreeRbac>>();
+        IApplicationDbContext context = Substitute.For<IApplicationDbContext>();
+        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
+        DbSet<Tree> treeDbSet = Substitute.For<DbSet<Tree>>();
+        DbSet<TreeRbac> rbacDbSet = Substitute.For<DbSet<TreeRbac>>();
 
         context.Trees.Returns(treeDbSet);
         context.TreeRbacs.Returns(rbacDbSet);
@@ -32,7 +32,7 @@ public class CreateTreeCommandHandlerTests
             OwnerId = Guid.NewGuid()
         };
 
-        var result = await handler.HandleAsync(command, CancellationToken.None);
+        Result<Guid> result = await handler.HandleAsync(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBe(Guid.Empty);
@@ -41,10 +41,10 @@ public class CreateTreeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_WithInvalidName_ReturnsFailure()
     {
-        var context = Substitute.For<IApplicationDbContext>();
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        var treeDbSet = Substitute.For<DbSet<Tree>>();
-        var rbacDbSet = Substitute.For<DbSet<TreeRbac>>();
+        IApplicationDbContext context = Substitute.For<IApplicationDbContext>();
+        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
+        DbSet<Tree> treeDbSet = Substitute.For<DbSet<Tree>>();
+        DbSet<TreeRbac> rbacDbSet = Substitute.For<DbSet<TreeRbac>>();
 
         context.Trees.Returns(treeDbSet);
         context.TreeRbacs.Returns(rbacDbSet);
@@ -58,7 +58,7 @@ public class CreateTreeCommandHandlerTests
             OwnerId = Guid.NewGuid()
         };
 
-        var result = await handler.HandleAsync(command, CancellationToken.None);
+        Result<Guid> result = await handler.HandleAsync(command, CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.TreeErrors.InvalidTreeName);
