@@ -29,6 +29,16 @@ services:
       - database
     networks:
       - mynet
+  redis:
+    image: redis:7-alpine
+    container_name: family_tree_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mynet
 networks:
   mynet:
     driver: bridge
@@ -36,4 +46,6 @@ volumes:
   postgres_data:
     driver: local
   minio_data:
+    driver: local
+  redis_data:
     driver: local

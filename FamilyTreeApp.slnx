@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="docker-compose.yml" />
+    <File Path="implementation_plan.md" />
   </Folder>
   <Project Path="FamilyTreeApp/FamilyTreeApp.Api/FamilyTreeApp.Api.csproj" />
   <Project Path="FamilyTreeApp/FamilyTreeApp.Application/FamilyTreeApp.Application.csproj" />
