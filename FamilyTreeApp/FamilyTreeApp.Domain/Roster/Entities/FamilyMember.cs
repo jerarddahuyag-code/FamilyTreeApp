@@ -2,9 +2,6 @@
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Domain.Roster.Entities;
 
@@ -77,7 +74,7 @@ public class FamilyMember : AggregateRoot
 
         if (VisibilityStatus == VisibilityStatus.Visible && visibilityStatus == VisibilityStatus.Hidden)
         {
-           return true;
+            return true;
         }
 
         if (VisibilityStatus == VisibilityStatus.Hidden && visibilityStatus == VisibilityStatus.Pending)

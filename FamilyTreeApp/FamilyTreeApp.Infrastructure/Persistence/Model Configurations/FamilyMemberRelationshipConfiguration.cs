@@ -1,9 +1,6 @@
 ﻿using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Infrastructure.Persistence.Model_Configurations;
 

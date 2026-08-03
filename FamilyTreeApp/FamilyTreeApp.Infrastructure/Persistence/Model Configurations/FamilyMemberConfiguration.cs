@@ -1,9 +1,6 @@
 ﻿using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Infrastructure.Persistence.Model_Configurations;
 
@@ -14,7 +11,7 @@ public class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyMember>
         builder.ToTable("family_members");
         builder.HasKey(t => t.FamilyMemberId);
         builder.Property(t => t.FamilyMemberId).HasColumnName("family_member_id");
-        
+
         builder.OwnsOne(u => u.ProfileInfo, p =>
         {
             p.Property(pi => pi.FirstName).HasColumnName("first_name").HasMaxLength(100);

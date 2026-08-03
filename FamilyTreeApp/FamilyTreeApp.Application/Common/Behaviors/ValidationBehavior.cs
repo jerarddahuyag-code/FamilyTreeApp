@@ -7,7 +7,7 @@ namespace FamilyTreeApp.Application.Common.Behaviors;
 
 public sealed class ValidationPipelineBehavior<TRequest, TResponse>(
     ICommandHandler<TRequest, TResponse> innerHandler,
-    IEnumerable<IValidator<TRequest>> validators) 
+    IEnumerable<IValidator<TRequest>> validators)
     : ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     public async Task<Result<TResponse>> HandleAsync(

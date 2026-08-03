@@ -2,11 +2,10 @@ using FamilyTreeApp.Api.Middleware;
 using FamilyTreeApp.Application;
 using FamilyTreeApp.Infrastructure;
 using Google.Apis.Auth.AspNetCore3;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using System;
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +59,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FamilyTreeApp API", Version = "v1" });
-    
+
     c.AddSecurityDefinition("OIDC", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OpenIdConnect,

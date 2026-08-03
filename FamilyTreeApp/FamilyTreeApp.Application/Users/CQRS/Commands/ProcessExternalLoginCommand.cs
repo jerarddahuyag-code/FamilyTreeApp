@@ -1,7 +1,7 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
@@ -30,20 +30,20 @@ public class ProcessExternalLoginCommandHandler(
             return Result.Failure<bool>(Domain.Common.Errors.DomainErrors.ExternalLoginErrors.InvalidProviderKey);
         }
 
-        var existingLogin = await context.ExternalLogins.FirstOrDefaultAsync(x => x.Provider == command.Provider && x.ProviderKey == command.ProviderKey, cancellationToken);
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == command.Email && u.DeletedAt == null, cancellationToken);
+        ExternalLogin? existingLogin = await context.ExternalLogins.FirstOrDefaultAsync(x => x.Provider == command.Provider && x.ProviderKey == command.ProviderKey, cancellationToken);
+        User? existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == command.Email && u.DeletedAt == null, cancellationToken);
         Guid userId = existingUser?.UserId ?? Guid.Empty;
-        
+
         if (existingUser == null)
         {
-            var createResult = await createUserHandler.HandleAsync(new CreateUserCommand
-                {
-                    Email = command.Email,
-                    FirstName = command.GivenName ?? (command.Name?.Split(' ').FirstOrDefault()),
-                    LastName = command.FamilyName ?? (command.Name?.Split(' ').Skip(1).FirstOrDefault()),
-                    AvatarUrl = command.Picture,
-                    IsPublic = true
-                }, cancellationToken);
+            Result<Guid> createResult = await createUserHandler.HandleAsync(new CreateUserCommand
+            {
+                Email = command.Email,
+                FirstName = command.GivenName ?? (command.Name?.Split(' ').FirstOrDefault()),
+                LastName = command.FamilyName ?? (command.Name?.Split(' ').Skip(1).FirstOrDefault()),
+                AvatarUrl = command.Picture,
+                IsPublic = true
+            }, cancellationToken);
 
             if (createResult.IsFailure)
             {
@@ -55,7 +55,7 @@ public class ProcessExternalLoginCommandHandler(
 
         if (existingLogin == null)
         {
-            var createExternalResult = await createExternalLoginHandler.HandleAsync(new CreateExternalLoginCommand
+            Result<Guid> createExternalResult = await createExternalLoginHandler.HandleAsync(new CreateExternalLoginCommand
             {
                 ExternalLoginId = Guid.NewGuid(),
                 UserId = userId,

@@ -1,8 +1,5 @@
 ﻿using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Domain.Roster.Entities;
 

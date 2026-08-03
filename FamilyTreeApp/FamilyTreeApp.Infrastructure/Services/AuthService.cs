@@ -1,12 +1,8 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Text;
 using Microsoft.AspNetCore.Authentication;
-using FamilyTreeApp.Domain.Common;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Infrastructure.Services;
 

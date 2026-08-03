@@ -1,6 +1,4 @@
-﻿using FamilyTreeApp.Domain.Common;
-
-namespace FamilyTreeApp.Application.Common.Interfaces;
+﻿namespace FamilyTreeApp.Application.Common.Interfaces;
 
 public interface IAuthService
 {

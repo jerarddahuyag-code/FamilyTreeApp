@@ -146,40 +146,6 @@ dotnet test FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
 
 ---
 
-### TASK-0.4 — Create test project `FamilyTreeApp.Tests` 🔴
-
-**File:** `FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj`
-
-**What:** xUnit test project targeting .NET 10; add to solution.
-
-**NuGet packages (latest stable):**
-- `Microsoft.NET.Test.Sdk`
-- `xunit`
-- `xunit.runner.visualstudio`
-- `coverlet.collector`
-- `FluentAssertions`
-- `NSubstitute`
-
-**Project references:**
-- `FamilyTreeApp.Domain`
-- `FamilyTreeApp.Application`
-- `FamilyTreeApp.Infrastructure`
-
-**Solution:** Register in `FamilyTreeApp.slnx`
-
-**Acceptance Criteria:**
-- `dotnet build` compiles with no errors
-- `dotnet test` discovers tests (even if 0 initially)
-- Project appears in Visual Studio Solution Explorer
-
-**Verify:**
-```powershell
-dotnet build FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
-dotnet test FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
-```
-
----
-
 ### TASK-0.5 — Write domain and handler unit tests 🔴
 
 **Depends on:** TASK-0.4

@@ -19,7 +19,7 @@ public class CreateExternalLoginCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateExternalLoginCommand command, CancellationToken cancellationToken = default)
     {
-        var createExternalResult = ExternalLogin.Create(command.ExternalLoginId, command.UserId, command.Provider, command.ProviderKey);
+        Result<ExternalLogin> createExternalResult = ExternalLogin.Create(command.ExternalLoginId, command.UserId, command.Provider, command.ProviderKey);
         if (createExternalResult.IsFailure)
         {
             return Result.Failure<Guid>(createExternalResult.Error);
