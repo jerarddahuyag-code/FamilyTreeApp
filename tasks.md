@@ -1,7 +1,7 @@
 # FamilyTreeApp — Implementation Tasks
 
 > **Legend:** 🔴 Not started | 🟡 In progress | 🟢 Complete | ⏭ Deferred
-> **Last updated:** Phase 1 Architecture Foundation complete
+> **Last updated:** Phase 2 Trees + RBAC complete
 
 ---
 
@@ -389,7 +389,7 @@ FamilyTreeApp.Tests/Unit/Application/Behaviors/TransactionBehaviorTests.cs
 
 ---
 
-### TASK-2.1 — Implement RBAC authorization policies 🔴
+### TASK-2.1 — Implement RBAC authorization policies 🟢
 
 **Files:**
 ```
@@ -425,7 +425,7 @@ builder.Services.AddAuthorization(options =>
 
 ---
 
-### TASK-2.2 — Add RBAC caching 🔴
+### TASK-2.2 — Add RBAC caching 🟢
 
 **Depends on:** TASK-2.1
 

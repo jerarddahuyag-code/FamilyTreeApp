@@ -1,9 +1,11 @@
+using FamilyTreeApp.Api.Authorization;
 using FamilyTreeApp.Api.Middleware;
 using FamilyTreeApp.Application;
 using FamilyTreeApp.Infrastructure;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using System.Text.Json.Serialization;
 
@@ -13,8 +15,17 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddScoped<IAuthorizationHandler, TreeAuthorizationHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("TreeOwner", p => p.AddRequirements(new TreeOwnerRequirement()));
+    options.AddPolicy("TreeAdmin", p => p.AddRequirements(new TreeAdminRequirement()));
+    options.AddPolicy("TreeMember", p => p.AddRequirements(new TreeMemberRequirement()));
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

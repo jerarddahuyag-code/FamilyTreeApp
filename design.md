@@ -1,7 +1,7 @@
 # FamilyTreeApp — Technical Design
 
 > **Status:** Living document. Updated at the end of each phase.
-> **Last updated:** Phase 0 / Phase 1 gap-filling pass
+> **Last updated:** Phase 2 Trees + RBAC complete
 
 ---
 
@@ -76,26 +76,34 @@ FamilyTreeApp/                              ← Solution root
 	│   └── DependencyInjection.cs          ✅
 	│
 	├── FamilyTreeApp.Api/                  ✅ EXISTS
+	│   ├── Authorization/                  ✅ (TASK-2.1)
+	│   │   ├── TreeRoles.cs                ✅ (TASK-2.1)
+	│   │   ├── TreeOwnerRequirement.cs     ✅ (TASK-2.1)
+	│   │   ├── TreeAdminRequirement.cs     ✅ (TASK-2.1)
+	│   │   ├── TreeMemberRequirement.cs    ✅ (TASK-2.1)
+	│   │   └── TreeAuthorizationHandler.cs ✅ (TASK-2.1, TASK-2.2)
 	│   ├── Controllers/
 	│   │   ├── AuthController.cs           ✅
 	│   │   └── TreesController.cs          ✅
 	│   ├── Middleware/GlobalExceptionHandler.cs  ✅
 	│   ├── Dockerfile                      ✅
-	│   └── Program.cs                      ✅
+	│   └── Program.cs                      ✅ (TASK-2.1)
 	│
 	└── FamilyTreeApp.Tests/                ✅ EXISTS (TASK-0.4)
 		├── FamilyTreeApp.Tests.csproj
 		└── Unit/
+			├── Api/
+			│   └── TreeAuthorizationHandlerTests.cs ✅ (TASK-2.1, TASK-2.2)
 			├── Domain/
-			│   ├── UserTests.cs            🔴 TODO (TASK-0.5)
-			│   ├── TreeTests.cs            🔴 TODO (TASK-0.5)
-			│   └── TreeRbacTests.cs        🔴 TODO (TASK-0.5)
+			│   ├── UserTests.cs            ✅ (TASK-0.5)
+			│   ├── TreeTests.cs            ✅ (TASK-0.5)
+			│   └── TreeRbacTests.cs        ✅ (TASK-0.5)
 			└── Application/
 				├── Behaviors/
 				│   ├── LoggingBehaviorTests.cs      ✅ (TASK-1.7)
 				│   └── TransactionBehaviorTests.cs  ✅ (TASK-1.7)
 				└── Trees/
-					└── CreateTreeCommandHandlerTests.cs  🔴 TODO (TASK-0.5)
+					└── CreateTreeCommandHandlerTests.cs  ✅ (TASK-0.5)
 ```
 
 ---

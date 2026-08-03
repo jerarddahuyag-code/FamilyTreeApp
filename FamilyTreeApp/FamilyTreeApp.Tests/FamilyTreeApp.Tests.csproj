@@ -28,6 +28,7 @@
     <ProjectReference Include="..\FamilyTreeApp.Domain\FamilyTreeApp.Domain.csproj" />
     <ProjectReference Include="..\FamilyTreeApp.Application\FamilyTreeApp.Application.csproj" />
     <ProjectReference Include="..\FamilyTreeApp.Infrastructure\FamilyTreeApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\FamilyTreeApp.Api\FamilyTreeApp.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
