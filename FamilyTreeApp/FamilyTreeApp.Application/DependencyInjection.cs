@@ -1,3 +1,4 @@
+using FamilyTreeApp.Application.Common.Behaviors;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -21,6 +22,10 @@ public static class DependencyInjection
             .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
+
+        // Behaviors — registered innermost-first (LIFO = last registered = outermost)
+        services.Decorate(typeof(ICommandHandler<,>), typeof(TransactionBehavior<,>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingBehavior<,>));
 
         return services;
     }

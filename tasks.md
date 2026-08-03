@@ -1,7 +1,7 @@
 # FamilyTreeApp — Implementation Tasks
 
 > **Legend:** 🔴 Not started | 🟡 In progress | 🟢 Complete | ⏭ Deferred
-> **Last updated:** Phase 0 / Phase 1 gap-filling pass
+> **Last updated:** Phase 1 Architecture Foundation complete
 
 ---
 
@@ -205,7 +205,7 @@ All tests must be green.
 
 ---
 
-### TASK-1.1 — Create `ITransactionalCommand` 🔴
+### TASK-1.1 — Create `ITransactionalCommand` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/Common/Interfaces/ITransactionalCommand.cs`
 
@@ -229,7 +229,7 @@ public interface ITransactionalCommand { }
 
 ---
 
-### TASK-1.2 — Create `LoggingBehavior` 🔴
+### TASK-1.2 — Create `LoggingBehavior` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/Common/Behaviors/LoggingBehavior.cs`
 
@@ -258,7 +258,7 @@ implements `ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResp
 
 ---
 
-### TASK-1.3 — Create `TransactionBehavior` 🔴
+### TASK-1.3 — Create `TransactionBehavior` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/Common/Behaviors/TransactionBehavior.cs`
 
@@ -297,7 +297,7 @@ else:
 
 ---
 
-### TASK-1.4 — Create `INotificationPublisher` 🔴
+### TASK-1.4 — Create `INotificationPublisher` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/Common/Interfaces/INotificationPublisher.cs`
 
@@ -315,7 +315,7 @@ public interface INotificationPublisher
 
 ---
 
-### TASK-1.5 — Create `INotificationHandler` 🔴
+### TASK-1.5 — Create `INotificationHandler` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/Common/Interfaces/INotificationHandler.cs`
 
@@ -332,7 +332,7 @@ public interface INotificationHandler<in T> where T : notnull
 
 ---
 
-### TASK-1.6 — Register behaviors in `DependencyInjection.cs` 🔴
+### TASK-1.6 — Register behaviors in `DependencyInjection.cs` 🟢
 
 **File:** `FamilyTreeApp/FamilyTreeApp.Application/DependencyInjection.cs`
 
@@ -358,7 +358,7 @@ services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingBehavior<,>));      
 
 ---
 
-### TASK-1.7 — Write behavior unit tests 🔴
+### TASK-1.7 — Write behavior unit tests 🟢
 
 **Depends on:** TASK-0.4, TASK-1.2, TASK-1.3
 

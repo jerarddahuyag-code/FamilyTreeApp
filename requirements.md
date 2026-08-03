@@ -2,7 +2,7 @@
 
 > **Status:** Living document. Updated at the end of each phase.
 > **Notation:** [EARS](https://alistairmavin.com/ears/) — Easy Approach to Requirements Syntax
-> **Last updated:** Phase 0 / Phase 1 gap-filling pass
+> **Last updated:** Phase 1 Architecture Foundation complete
 
 ---
 

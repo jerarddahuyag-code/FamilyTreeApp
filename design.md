@@ -55,16 +55,16 @@ FamilyTreeApp/                              ← Solution root
 	├── FamilyTreeApp.Application/          ✅ EXISTS
 	│   ├── Common/
 	│   │   ├── Behaviors/
-	│   │   │   ├── LoggingBehavior.cs              🔴 TODO (TASK-1.2)
-	│   │   │   └── TransactionBehavior.cs          🔴 TODO (TASK-1.3)
+	│   │   │   ├── LoggingBehavior.cs              ✅ (TASK-1.2)
+	│   │   │   └── TransactionBehavior.cs          ✅ (TASK-1.3)
 	│   │   └── Interfaces/
 	│   │       ├── IApplicationDbContext.cs         ✅ EXISTS
-	│   │       ├── ITransactionalCommand.cs         🔴 TODO (TASK-1.1)
-	│   │       ├── INotificationPublisher.cs        🔴 TODO (TASK-1.4)
-	│   │       └── INotificationHandler.cs          🔴 TODO (TASK-1.5)
+	│   │       ├── ITransactionalCommand.cs         ✅ (TASK-1.1)
+	│   │       ├── INotificationPublisher.cs        ✅ (TASK-1.4)
+	│   │       └── INotificationHandler.cs          ✅ (TASK-1.5)
 	│   ├── Users/CQRS/                             ✅
 	│   ├── Trees/CQRS/                             ✅
-	│   └── DependencyInjection.cs                  🟡 UPDATE NEEDED (TASK-1.6)
+	│   └── DependencyInjection.cs                  ✅ (TASK-1.6)
 	│
 	├── FamilyTreeApp.Infrastructure/       ✅ EXISTS
 	│   ├── Persistence/
@@ -92,8 +92,8 @@ FamilyTreeApp/                              ← Solution root
 			│   └── TreeRbacTests.cs        🔴 TODO (TASK-0.5)
 			└── Application/
 				├── Behaviors/
-				│   ├── LoggingBehaviorTests.cs      🔴 TODO (TASK-1.7)
-				│   └── TransactionBehaviorTests.cs  🔴 TODO (TASK-1.7)
+				│   ├── LoggingBehaviorTests.cs      ✅ (TASK-1.7)
+				│   └── TransactionBehaviorTests.cs  ✅ (TASK-1.7)
 				└── Trees/
 					└── CreateTreeCommandHandlerTests.cs  🔴 TODO (TASK-0.5)
 ```
