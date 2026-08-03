@@ -9,7 +9,7 @@
 
 ---
 
-### TASK-0.1 — Add `.globalconfig` 🔴
+### TASK-0.1 — Add `.globalconfig` 🟢
 
 **File:** `.globalconfig` (solution root)
 
@@ -31,7 +31,7 @@ dotnet build --warnaserror
 
 ---
 
-### TASK-0.2 — Add Redis to `docker-compose.yml` 🔴
+### TASK-0.2 — Add Redis to `docker-compose.yml` 🟢
 
 **File:** `docker-compose.yml` (solution root)
 
@@ -66,9 +66,64 @@ docker compose down
 
 ---
 
-### TASK-0.3 — Create GitHub Actions CI workflow 🔴
+### TASK-0.3 — Create GitHub Actions CI workflow 🟢
 
 **File:** `.github/workflows/ci.yml`
+
+**What:** Automated pipeline that validates formatting, build, and tests on every push/PR.
+
+**Steps in workflow:**
+1. `actions/checkout@v4`
+2. `actions/setup-dotnet@v4` with `dotnet-version: '10.0.x'`
+3. `dotnet restore`
+4. `dotnet format --verify-no-changes --verbosity diagnostic`
+5. `dotnet build --no-restore --warnaserror`
+6. `dotnet test --no-build --verbosity normal`
+
+**Trigger:** `push` to `main`; `pull_request` targeting `main`
+
+**Acceptance Criteria:**
+- Pipeline is green on a clean push
+- Pipeline fails if code has formatting violations
+- Pipeline fails if any test fails
+
+**Verify:** Push to main branch; check GitHub Actions tab.
+
+---
+
+### TASK-0.4 — Create test project `FamilyTreeApp.Tests` 🟢
+
+**File:** `FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj`
+
+**What:** xUnit test project targeting .NET 10; add to solution.
+
+**NuGet packages (latest stable):**
+- `Microsoft.NET.Test.Sdk`
+- `xunit`
+- `xunit.runner.visualstudio`
+- `coverlet.collector`
+- `FluentAssertions`
+- `NSubstitute`
+
+**Project references:**
+- `FamilyTreeApp.Domain`
+- `FamilyTreeApp.Application`
+- `FamilyTreeApp.Infrastructure`
+
+**Solution:** Register in `FamilyTreeApp.slnx`
+
+**Acceptance Criteria:**
+- `dotnet build` compiles with no errors
+- `dotnet test` discovers tests (even if 0 initially)
+- Project appears in Visual Studio Solution Explorer
+
+**Verify:**
+```powershell
+dotnet build FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
+dotnet test FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
+```
+
+---
 
 **What:** Automated pipeline that validates formatting, build, and tests on every push/PR.
 

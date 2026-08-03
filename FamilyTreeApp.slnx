@@ -1,8 +1,14 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="design.md" />
     <File Path="docker-compose.yml" />
     <File Path="implementation_plan.md" />
+    <File Path="requirements.md" />
+    <File Path="tasks.md" />
+  </Folder>
+  <Folder Name="/tests/" Id="309984b0-1666-2651-425b-54ca75c2497d">
+    <Project Path="FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj" />
   </Folder>
   <Project Path="FamilyTreeApp/FamilyTreeApp.Api/FamilyTreeApp.Api.csproj" />
   <Project Path="FamilyTreeApp/FamilyTreeApp.Application/FamilyTreeApp.Application.csproj" />

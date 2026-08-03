@@ -10,9 +10,9 @@
 ```
 FamilyTreeApp/                              ← Solution root
 ├── .editorconfig                           ✅ EXISTS
-├── .globalconfig                           🔴 TODO (TASK-0.1)
-├── .github/workflows/ci.yml               🔴 TODO (TASK-0.3)
-├── docker-compose.yml                      🟡 EXISTS — Redis service to be added (TASK-0.2)
+├── .globalconfig                           ✅ EXISTS (TASK-0.1)
+├── .github/workflows/ci.yml               ✅ EXISTS (TASK-0.3)
+├── docker-compose.yml                      ✅ EXISTS — Redis service added (TASK-0.2)
 ├── requirements.md                         ✅ EXISTS
 ├── design.md                               ✅ EXISTS
 ├── tasks.md                                ✅ EXISTS
@@ -71,7 +71,7 @@ FamilyTreeApp/                              ← Solution root
 	│   ├── Dockerfile                      ✅
 	│   └── Program.cs                      ✅
 	│
-	└── FamilyTreeApp.Tests/                🔴 TODO (TASK-0.4)
+	└── FamilyTreeApp.Tests/                ✅ EXISTS (TASK-0.4)
 		├── FamilyTreeApp.Tests.csproj
 		└── Unit/
 			├── Domain/
