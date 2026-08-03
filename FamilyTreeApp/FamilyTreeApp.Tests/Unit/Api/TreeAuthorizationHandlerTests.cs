@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using System.Text.Json;
 using FamilyTreeApp.Api.Authorization;
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Trees.Entities;
@@ -13,6 +11,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using MockQueryable.NSubstitute;
 using NSubstitute;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace FamilyTreeApp.Tests.Unit.Api;
 
@@ -99,7 +99,7 @@ public class TreeAuthorizationHandlerTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        byte[] cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Owner);
+        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Owner);
         _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
             .Returns(cachedBytes);
 
@@ -130,7 +130,7 @@ public class TreeAuthorizationHandlerTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        byte[] cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Admin);
+        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Admin);
         _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
             .Returns(cachedBytes);
 
@@ -162,7 +162,7 @@ public class TreeAuthorizationHandlerTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        byte[] cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Member);
+        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Member);
         _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
             .Returns(cachedBytes);
 

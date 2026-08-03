@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace FamilyTreeApp.Application.Common.Behaviors;
 
@@ -18,7 +18,7 @@ public sealed class LoggingBehavior<TRequest, TResponse>(
         Result<TResponse> result = await innerHandler.HandleAsync(command, cancellationToken);
         sw.Stop();
 
-        string commandType = typeof(TRequest).Name;
+        var commandType = typeof(TRequest).Name;
 
         if (result.IsSuccess)
         {

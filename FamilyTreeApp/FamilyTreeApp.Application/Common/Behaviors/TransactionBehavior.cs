@@ -1,5 +1,6 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FamilyTreeApp.Application.Common.Behaviors;
 
@@ -18,10 +19,10 @@ public sealed class TransactionBehavior<TRequest, TResponse>(
             return await innerHandler.HandleAsync(command, cancellationToken);
         }
 
-        await using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using IDbContextTransaction tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var result = await innerHandler.HandleAsync(command, cancellationToken);
+            Result<TResponse> result = await innerHandler.HandleAsync(command, cancellationToken);
             if (result.IsSuccess)
             {
                 await tx.CommitAsync(cancellationToken);

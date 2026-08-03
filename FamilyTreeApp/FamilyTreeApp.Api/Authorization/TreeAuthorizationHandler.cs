@@ -1,14 +1,11 @@
-using System.Security.Claims;
-using System.Text.Json;
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace FamilyTreeApp.Api.Authorization;
 
@@ -45,7 +42,7 @@ public class TreeAuthorizationHandler : IAuthorizationHandler
             return;
         }
 
-        string? userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdClaim, out Guid userId))
         {
             return;
@@ -77,30 +74,32 @@ public class TreeAuthorizationHandler : IAuthorizationHandler
     private static bool TryGetTreeId(RouteData routeData, out Guid treeId)
     {
         treeId = Guid.Empty;
-        if (routeData.Values.TryGetValue("treeId", out object? val) || routeData.Values.TryGetValue("id", out val))
+        if (routeData.Values.TryGetValue("treeId", out var val) || routeData.Values.TryGetValue("id", out val))
         {
             if (val is string strVal && Guid.TryParse(strVal, out treeId))
             {
                 return true;
             }
+
             if (val is Guid gVal)
             {
                 treeId = gVal;
                 return true;
             }
         }
+
         return false;
     }
 
     private async Task<TreeRole?> GetUserTreeRoleAsync(Guid treeId, Guid userId, CancellationToken cancellationToken)
     {
-        string cacheKey = $"rbac:{treeId}:{userId}";
+        var cacheKey = $"rbac:{treeId}:{userId}";
         try
         {
-            byte[]? cachedBytes = await _cache.GetAsync(cacheKey, cancellationToken);
+            var cachedBytes = await _cache.GetAsync(cacheKey, cancellationToken);
             if (cachedBytes != null)
             {
-                var cachedRole = JsonSerializer.Deserialize<TreeRole>(cachedBytes);
+                TreeRole cachedRole = JsonSerializer.Deserialize<TreeRole>(cachedBytes);
                 return cachedRole;
             }
         }
@@ -120,7 +119,7 @@ public class TreeAuthorizationHandler : IAuthorizationHandler
 
         try
         {
-            byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(rbac.TreeRole);
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(rbac.TreeRole);
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
