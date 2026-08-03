@@ -32,7 +32,7 @@ public class CreateTreeCommandHandlerTests
             OwnerId = Guid.NewGuid()
         };
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBe(Guid.Empty);
@@ -58,7 +58,7 @@ public class CreateTreeCommandHandlerTests
             OwnerId = Guid.NewGuid()
         };
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(command, CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.TreeErrors.InvalidTreeName);
