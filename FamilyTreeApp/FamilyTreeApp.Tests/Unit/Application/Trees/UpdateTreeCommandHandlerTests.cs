@@ -4,6 +4,7 @@ using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 
@@ -14,11 +15,11 @@ public class UpdateTreeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_WhenTreeNotFound_ReturnsFailure()
     {
-        var context = Substitute.For<IApplicationDbContext>();
-        var unitOfWork = Substitute.For<IUnitOfWork>();
+        IApplicationDbContext context = Substitute.For<IApplicationDbContext>();
+        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
 
         var emptyList = new List<Tree>();
-        var mockDbSet = emptyList.BuildMockDbSet();
+        DbSet<Tree> mockDbSet = emptyList.BuildMockDbSet();
         context.Trees.Returns(mockDbSet);
 
         var handler = new UpdateTreeCommandHandler(context, unitOfWork);

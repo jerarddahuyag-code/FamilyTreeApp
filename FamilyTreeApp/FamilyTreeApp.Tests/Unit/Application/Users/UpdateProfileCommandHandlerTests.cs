@@ -4,6 +4,7 @@ using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Users.Entities;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 
@@ -14,11 +15,11 @@ public class UpdateProfileCommandHandlerTests
     [Fact]
     public async Task HandleAsync_WhenUserNotFound_ReturnsFailure()
     {
-        var context = Substitute.For<IApplicationDbContext>();
-        var unitOfWork = Substitute.For<IUnitOfWork>();
+        IApplicationDbContext context = Substitute.For<IApplicationDbContext>();
+        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
 
         var emptyList = new List<User>();
-        var mockDbSet = emptyList.BuildMockDbSet();
+        DbSet<User> mockDbSet = emptyList.BuildMockDbSet();
         context.Users.Returns(mockDbSet);
 
         var handler = new UpdateProfileCommandHandler(context, unitOfWork);
