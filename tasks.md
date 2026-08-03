@@ -146,7 +146,7 @@ dotnet test FamilyTreeApp/FamilyTreeApp.Tests/FamilyTreeApp.Tests.csproj
 
 ---
 
-### TASK-0.5 — Write domain and handler unit tests 🔴
+### TASK-0.5 — Write domain and handler unit tests 🟢
 
 **Depends on:** TASK-0.4
 
