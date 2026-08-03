@@ -235,7 +235,7 @@ public interface ITransactionalCommand { }
 
 **Depends on:** TASK-1.1 (same layer, same pass)
 
-**Pattern:** Identical structure to `ValidationPipelineBehavior` — primary constructor,
+**Pattern:** Identical structure to the behavior pattern defined in design.md — primary constructor,
 implements `ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>`.
 
 **Dependencies (constructor):**
@@ -264,7 +264,7 @@ implements `ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResp
 
 **Depends on:** TASK-1.1
 
-**Pattern:** Identical structure to `ValidationPipelineBehavior`.
+**Pattern:** Identical structure to the behavior pattern defined in design.md.
 
 **Dependencies (constructor):**
 1. `ICommandHandler<TRequest, TResponse> innerHandler`
@@ -338,23 +338,17 @@ public interface INotificationHandler<in T> where T : notnull
 
 **Depends on:** TASK-1.2, TASK-1.3
 
-**What:** Add `Decorate` calls for `TransactionBehavior` and `LoggingBehavior`
-**before** the existing `ValidationPipelineBehavior` decoration, so that
-`ValidationPipelineBehavior` remains the outermost layer.
+**What:** Add `Decorate` calls for `TransactionBehavior` and `LoggingBehavior`.
 
 **Final registration order:**
 ```csharp
-// 1. Scan and register raw handlers (unchanged)
+// 1. Scan and register raw handlers
 services.Scan(...)   // ICommandHandler<,>
 services.Scan(...)   // IQueryHandler<,>
 
-// 2. Register FluentValidation validators (unchanged)
-services.AddValidatorsFromAssembly(assembly);
-
-// 3. Behaviors — registered innermost-first (LIFO = last registered = outermost)
+// 2. Behaviors — registered innermost-first (LIFO = last registered = outermost)
 services.Decorate(typeof(ICommandHandler<,>), typeof(TransactionBehavior<,>));   // NEW
-services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingBehavior<,>));        // NEW
-services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationPipelineBehavior<,>));  // EXISTING (moved last)
+services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingBehavior<,>));        // NEW (outermost)
 ```
 
 **Acceptance Criteria:**
@@ -515,7 +509,6 @@ public static class Roster
 ```
 FamilyTreeApp.Application/Roster/Commands/AddFamilyMember/AddFamilyMemberCommand.cs
 FamilyTreeApp.Application/Roster/Commands/AddFamilyMember/AddFamilyMemberCommandHandler.cs
-FamilyTreeApp.Application/Roster/Commands/AddFamilyMember/AddFamilyMemberCommandValidator.cs
 FamilyTreeApp.Application/Roster/Commands/UpdateFamilyMember/...
 FamilyTreeApp.Application/Roster/Commands/RequestVisibility/...
 FamilyTreeApp.Application/Roster/Commands/AddRelationship/...
@@ -523,6 +516,8 @@ FamilyTreeApp.Application/Roster/Commands/RemoveRelationship/...
 ```
 
 `AddFamilyMemberCommand` implements `ITransactionalCommand`.
+
+**Validation** is handled via inline guard clauses and domain factory methods, following the established pattern (see `ProcessExternalLoginCommandHandler` and domain `FamilyMember.Create()` for examples).
 
 ---
 

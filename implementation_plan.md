@@ -4,7 +4,7 @@
 > Clean Architecture solution with four projects:
 > - ✅ `FamilyTreeApp.Api` — ASP.NET Core 10 API, Google OAuth cookie auth, `GlobalExceptionHandler`, `TreesController`, `AuthController`
 > - ✅ `FamilyTreeApp.Domain` — `User`, `Tree`, `TreeRbac`, `ExternalLogin` entities; `ProfileInfo` value object; `Result<T>`, `Error`, `DomainErrors`; CQRS interfaces
-> - ✅ `FamilyTreeApp.Application` — Users + Trees CQRS commands/queries; `ValidationPipelineBehavior` (FluentValidation); `IApplicationDbContext`; Scrutor DI registration
+> - ✅ `FamilyTreeApp.Application` — Users + Trees CQRS commands/queries; direct validation (inline guard clauses + domain factory validation); `IApplicationDbContext`; Scrutor DI registration
 > - ✅ `FamilyTreeApp.Infrastructure` — `ApplicationDbContext`, `UnitOfWork`, EF Core model configurations, two applied migrations, `AuthService`
 >
 > **Still needed (Phase 0 gaps):** `.globalconfig`, CI workflow, test project, Redis in docker-compose
@@ -36,7 +36,7 @@
 | **Canvas model** | Three-layer: Biological (FamilyMember + Relationship) → Visual (TreeNode + TreeNodeMember + TreeEdge) | 🔴 Phase 4 |
 | **Node types** | `Single`, `Partner`, `MultiPerson` — `TreeNodeMember` join table for many-to-many | 🔴 Phase 4 |
 | **Relationship types** | Minimal: `Parent`, `Spouse`, `Sibling` (extensible later) | 🔴 TASK-3.3 |
-| **Input validation** | FluentValidation via `ValidationPipelineBehavior` (auto-registered via Scrutor). Domain entities enforce invariants via `Result<T>`. | 🔄 |
+| **Input validation** | Direct validation functions + domain factory validation. Inline guard clauses in handlers when needed. Domain entities enforce invariants via `Result<T>`. | 🔄 |
 | **Error handling** | `Result<T>` for expected domain failures. Exceptions for unexpected infrastructure faults. | ✅ |
 | **Async processing** | Deferred to Phase 7 (synchronous-first) | ✅ |
 | **API hardening** | `GlobalExceptionHandler` + Problem Details in Phase 1 ✅; rate limiting + idempotency deferred to Phase 6 | 🔄 |
@@ -45,7 +45,7 @@
 | **Result pattern** | Custom `Result<T>` in `FamilyTreeApp.Domain` (no external dependency) | ✅ |
 | **Caching** | `IDistributedCache` abstraction; `MemoryDistributedCache` initially; Redis swap in Phase 6 | 🔴 TASK-2.2 |
 | **CQRS dispatch** | `IRequest<T>`, `ICommandHandler<,>`, `IQueryHandler<,>` in Domain. Scrutor DI registration. Direct `[FromServices]` injection in controllers. Behavior pipeline via `Scrutor.Decorate<>()`. | ✅ |
-| **Pipeline behaviors** | Named *behaviors* (not decorators). `ValidationPipelineBehavior` ✅ exists. `LoggingBehavior` + `TransactionBehavior` 🔴 pending (TASK-1.2, TASK-1.3). Stacked via Scrutor LIFO. Execution order: Validation → Logging → Transaction → Handler. | 🔄 |
+| **Pipeline behaviors** | Named *behaviors* (not decorators). `LoggingBehavior` + `TransactionBehavior` 🔴 pending (TASK-1.2, TASK-1.3). Stacked via Scrutor LIFO. Execution order: Logging → Transaction → Handler (input validation happens in handler). | 🔄 |
 | **Notifications** | `INotificationPublisher` + `INotificationHandler<T>` interfaces in Phase 1. Concrete publisher deferred to Phase 6. | 🔴 TASK-1.4, TASK-1.5 |
 | **DI registration** | `DependencyInjection.cs` naming convention (not `ServiceScope.cs`) | 🔄 |
 | **Docker** | `docker-compose.yml` exists with `pgvector/pgvector:pg18` + API. Redis (`redis:7-alpine`) to be added (TASK-0.2). | 🔄 |

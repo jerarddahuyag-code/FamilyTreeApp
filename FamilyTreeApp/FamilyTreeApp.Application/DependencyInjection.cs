@@ -1,6 +1,4 @@
-using FamilyTreeApp.Application.Common.Behaviors;
 using FamilyTreeApp.Domain.Common;
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -23,10 +21,6 @@ public static class DependencyInjection
             .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
-
-        services.AddValidatorsFromAssembly(assembly);
-
-        services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationPipelineBehavior<,>));
 
         return services;
     }

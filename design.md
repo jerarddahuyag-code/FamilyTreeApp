@@ -42,7 +42,6 @@ FamilyTreeApp/                              ← Solution root
 	├── FamilyTreeApp.Application/          ✅ EXISTS
 	│   ├── Common/
 	│   │   ├── Behaviors/
-	│   │   │   ├── ValidationPipelineBehavior.cs  ✅ EXISTS
 	│   │   │   ├── LoggingBehavior.cs              🔴 TODO (TASK-1.2)
 	│   │   │   └── TransactionBehavior.cs          🔴 TODO (TASK-1.3)
 	│   │   └── Interfaces/
@@ -113,11 +112,34 @@ FamilyTreeApp.Tests  →  FamilyTreeApp.Domain
 
 ## 3. Behavior Pipeline
 
-### 3.1 Structural Pattern
+### 3.1 Input Validation Strategy
 
-All behaviors follow the **identical structural contract** as the existing
-`ValidationPipelineBehavior`. This is non-negotiable — consistency enables
-contributors to understand the pipeline at a glance.
+**Input validation is handled through two complementary approaches:**
+
+1. **Domain Factory Validation**: Entity creation and modification via static factory methods (e.g., `User.Create(...)`, `Tree.Create(...)`) that return `Result<T>` with domain-specific errors.
+
+2. **Inline Guard Clauses**: Command handlers perform explicit validation checks for simple invariants (null, empty strings, etc.) before calling domain logic.
+
+**Example patterns:**
+
+```csharp
+// Inline guard clause (handler-level)
+if (string.IsNullOrWhiteSpace(command.Email))
+{
+	return Result.Failure<Guid>(DomainErrors.UserErrors.EmailRequired);
+}
+
+// Domain factory validation
+Result<User> result = User.Create(command.Email, profileInfo);
+if (result.IsFailure)
+{
+	return Result.Failure<Guid>(result.Error);
+}
+```
+
+### 3.2 Structural Pattern
+
+All behaviors follow the **identical structural contract**. This is non-negotiable — consistency enables contributors to understand the pipeline at a glance.
 
 ```csharp
 // Namespace: FamilyTreeApp.Application.Common.Behaviors
@@ -139,7 +161,7 @@ public sealed class XyzBehavior<TRequest, TResponse>(
 }
 ```
 
-### 3.2 DI Registration Order and Execution Chain
+### 3.3 DI Registration Order and Execution Chain
 
 Scrutor `Decorate<>()` uses **LIFO** — last registered wraps outermost.
 
@@ -148,18 +170,13 @@ Scrutor `Decorate<>()` uses **LIFO** — last registered wraps outermost.
 ```
 Step 1 — Scrutor Scan registers raw handlers         (innermost layer)
 Step 2 — Decorate with TransactionBehavior
-Step 3 — Decorate with LoggingBehavior
-Step 4 — Decorate with ValidationPipelineBehavior    (outermost layer)
+Step 3 — Decorate with LoggingBehavior              (outermost layer)
 ```
 
 **Runtime execution chain per command:**
 
 ```
 HTTP Request
-  └─▶ ValidationPipelineBehavior
-		Validates all FluentValidation validators.
-		On failure → returns Result.Failure immediately (LoggingBehavior never called).
-		On success ↓
   └─▶ LoggingBehavior
 		Starts Stopwatch.
 		Calls inner handler.
@@ -174,10 +191,12 @@ HTTP Request
 		Returns result.
 		↓
   └─▶ Handler (concrete implementation)
-		Business logic. Returns Result<TResponse>.
+		Input validation (inline guard clauses).
+		Business logic (domain factory calls).
+		Returns Result<TResponse>.
 ```
 
-### 3.3 LoggingBehavior Design Detail
+### 3.4 LoggingBehavior Design Detail
 
 ```csharp
 public sealed class LoggingBehavior<TRequest, TResponse>(
@@ -196,7 +215,7 @@ public sealed class LoggingBehavior<TRequest, TResponse>(
 | PII policy | Request payload is **never** logged |
 | Exception handling | Exceptions propagate unchanged — not caught by this behavior |
 
-### 3.4 TransactionBehavior Design Detail
+### 3.5 TransactionBehavior Design Detail
 
 ```csharp
 public sealed class TransactionBehavior<TRequest, TResponse>(
@@ -215,7 +234,7 @@ public sealed class TransactionBehavior<TRequest, TResponse>(
 | Rollback condition | `result.IsFailure == true` OR exception thrown |
 | Exception handling | Rollback then re-throw — behavior does not swallow exceptions |
 
-### 3.5 ITransactionalCommand Placement
+### 3.6 ITransactionalCommand Placement
 
 Placed in `FamilyTreeApp.Application.Common.Interfaces` — transaction management
 is an application-layer concern, not a domain concern. Commands opt-in explicitly:
@@ -269,7 +288,6 @@ resolves all `INotificationHandler<T>` instances from DI and fan-outs via
 public record Error(string Code, string Description)
 {
 	public static readonly Error None = new(string.Empty, string.Empty);
-	public static readonly Error Validation = new("Validation", "One or more validation errors occurred.");
 }
 
 // Domain/Common/Errors/DomainErrors.cs

@@ -12,9 +12,9 @@
 |---|---|---|
 | **Project naming** | `FamilyTreeApp.*` throughout | Existing codebase convention |
 | **Authentication** | Google OAuth with ASP.NET Core cookie authentication | Simplifies token management; no custom JWT issuance |
-| **Input validation** | FluentValidation via `ValidationPipelineBehavior` | Declarative, testable, auto-registered via Scrutor |
+| **Input validation** | Direct validation functions + domain factory validation | Inline guard clauses when needed; domain invariants via factory methods returning `Result<T>` |
 | **Domain invariants** | Guard clauses returning `Result<T>` / `Result` | No exceptions for expected failures; caller always handles |
-| **CQRS pipeline** | Named *behaviors* following `ValidationPipelineBehavior` pattern | Consistent structure, primary constructor, Scrutor-decorated |
+| **CQRS pipeline** | Named *behaviors* following consistent pattern | Logging and Transaction behaviors; primary constructor, Scrutor-decorated |
 | **Handler injection** | Direct `[FromServices]` injection in controllers | No mediator/dispatcher; explicit dependencies |
 | **Error handling** | `Result<T>` for domain failures; exceptions for infra faults | Clear separation; global handler maps to RFC 7807 |
 | **Caching** | `IDistributedCache` abstraction; `MemoryDistributedCache` initially | Redis swap-in (Phase 6) requires no application-layer changes |
@@ -98,11 +98,10 @@ explicitly opt-in and declared at compile time.
 **THE SYSTEM SHALL** apply behaviors in the following execution order for every command:
 
 ```
-ValidationPipelineBehavior → LoggingBehavior → TransactionBehavior → Handler
+LoggingBehavior → TransactionBehavior → Handler
 ```
 
-**IF** validation fails, **THE SYSTEM SHALL NOT** invoke `LoggingBehavior`
-or `TransactionBehavior`.
+**IF** the handler returns `Result.IsFailure`, **THE SYSTEM SHALL** log the error details and roll back any transaction if applicable.
 
 ---
 
