@@ -27,7 +27,7 @@ public class RequestVisibilityCommandHandlerTests
     public async Task HandleAsync_ValidCommand_ReturnsSuccessAndUpdatesVisibility()
     {
         var treeId = Guid.NewGuid();
-        var member = CreateMember(treeId, VisibilityStatus.Hidden);
+        FamilyMember member = CreateMember(treeId, VisibilityStatus.Hidden);
 
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
@@ -72,7 +72,7 @@ public class RequestVisibilityCommandHandlerTests
     {
         var memberTreeId = Guid.NewGuid();
         var commandTreeId = Guid.NewGuid();
-        var member = CreateMember(memberTreeId, VisibilityStatus.Hidden);
+        FamilyMember member = CreateMember(memberTreeId, VisibilityStatus.Hidden);
 
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
@@ -94,7 +94,7 @@ public class RequestVisibilityCommandHandlerTests
     public async Task HandleAsync_InvalidTransition_ReturnsFailure()
     {
         var treeId = Guid.NewGuid();
-        var member = CreateMember(treeId, VisibilityStatus.Hidden);
+        FamilyMember member = CreateMember(treeId, VisibilityStatus.Hidden);
 
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);

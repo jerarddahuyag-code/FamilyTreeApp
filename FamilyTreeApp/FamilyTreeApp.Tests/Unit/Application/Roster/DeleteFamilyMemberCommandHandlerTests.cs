@@ -27,7 +27,7 @@ public class DeleteFamilyMemberCommandHandlerTests
     public async Task HandleAsync_ValidCommand_ReturnsSuccessAndRemovesMember()
     {
         var treeId = Guid.NewGuid();
-        var member = CreateMember(treeId);
+        FamilyMember member = CreateMember(treeId);
 
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
@@ -69,7 +69,7 @@ public class DeleteFamilyMemberCommandHandlerTests
     {
         var memberTreeId = Guid.NewGuid();
         var commandTreeId = Guid.NewGuid();
-        var member = CreateMember(memberTreeId);
+        FamilyMember member = CreateMember(memberTreeId);
 
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);

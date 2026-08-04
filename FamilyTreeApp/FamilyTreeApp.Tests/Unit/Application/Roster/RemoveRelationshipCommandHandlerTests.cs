@@ -26,7 +26,7 @@ public class RemoveRelationshipCommandHandlerTests
     public async Task HandleAsync_ValidCommand_ReturnsSuccess()
     {
         var treeId = Guid.NewGuid();
-        var relationship = FamilyMemberRelationship.Create(
+        FamilyMemberRelationship relationship = FamilyMemberRelationship.Create(
             Guid.NewGuid(),
             treeId,
             Guid.NewGuid(),
@@ -74,7 +74,7 @@ public class RemoveRelationshipCommandHandlerTests
         var relationshipTreeId = Guid.NewGuid();
         var commandTreeId = Guid.NewGuid();
 
-        var relationship = FamilyMemberRelationship.Create(
+        FamilyMemberRelationship relationship = FamilyMemberRelationship.Create(
             Guid.NewGuid(),
             relationshipTreeId,
             Guid.NewGuid(),

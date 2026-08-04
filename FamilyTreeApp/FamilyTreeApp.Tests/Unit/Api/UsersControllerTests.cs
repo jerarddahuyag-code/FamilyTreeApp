@@ -25,7 +25,7 @@ public class UsersControllerTests
     {
         // Arrange
         var targetUserId = Guid.NewGuid();
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, targetUserId.ToString()) };
+        Claim[] claims = new[] { new Claim(ClaimTypes.NameIdentifier, targetUserId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -38,7 +38,7 @@ public class UsersControllerTests
             .Returns(Result.Success(true));
 
         // Act
-        var result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
+        IActionResult result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
@@ -53,7 +53,7 @@ public class UsersControllerTests
         // Arrange
         var currentUserId = Guid.NewGuid();
         var targetUserId = Guid.NewGuid();
-        var claims = new[]
+        Claim[] claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, currentUserId.ToString()),
             new Claim(ClaimTypes.Role, "Admin")
@@ -67,7 +67,7 @@ public class UsersControllerTests
         };
 
         // Act
-        var result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
+        IActionResult result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<ForbidResult>();
@@ -82,7 +82,7 @@ public class UsersControllerTests
         // Arrange
         var currentUserId = Guid.NewGuid();
         var targetUserId = Guid.NewGuid();
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, currentUserId.ToString()) };
+        Claim[] claims = new[] { new Claim(ClaimTypes.NameIdentifier, currentUserId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -92,7 +92,7 @@ public class UsersControllerTests
         };
 
         // Act
-        var result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
+        IActionResult result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<ForbidResult>();

@@ -52,7 +52,7 @@ public class UsersController : ApiControllerBase
     public async Task<IActionResult> DeleteUser(Guid id, [FromServices] ICommandHandler<DeleteUserCommand, bool> deleteUserHandler, CancellationToken cancellationToken)
     {
         var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        bool isSelf = Guid.TryParse(currentUserIdStr, out Guid currentUserId) && currentUserId == id;
+        var isSelf = Guid.TryParse(currentUserIdStr, out Guid currentUserId) && currentUserId == id;
 
         if (!isSelf)
         {

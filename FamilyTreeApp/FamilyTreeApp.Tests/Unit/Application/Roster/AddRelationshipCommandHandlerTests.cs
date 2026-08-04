@@ -27,8 +27,8 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_ValidCommand_ReturnsRelationshipId()
     {
         var treeId = Guid.NewGuid();
-        var baseMember = CreateMember(treeId);
-        var relatedMember = CreateMember(treeId);
+        FamilyMember baseMember = CreateMember(treeId);
+        FamilyMember relatedMember = CreateMember(treeId);
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { baseMember, relatedMember }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
@@ -56,7 +56,7 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_BaseMemberNotFound_ReturnsFamilyMemberNotFoundError()
     {
         var treeId = Guid.NewGuid();
-        var relatedMember = CreateMember(treeId);
+        FamilyMember relatedMember = CreateMember(treeId);
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { relatedMember }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
@@ -79,7 +79,7 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_RelatedMemberNotFound_ReturnsFamilyMemberNotFoundError()
     {
         var treeId = Guid.NewGuid();
-        var baseMember = CreateMember(treeId);
+        FamilyMember baseMember = CreateMember(treeId);
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { baseMember }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
@@ -102,8 +102,8 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_BaseMemberTreeMismatch_ReturnsMemberTreeMismatchError()
     {
         var treeId = Guid.NewGuid();
-        var baseMember = CreateMember(Guid.NewGuid());
-        var relatedMember = CreateMember(treeId);
+        FamilyMember baseMember = CreateMember(Guid.NewGuid());
+        FamilyMember relatedMember = CreateMember(treeId);
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { baseMember, relatedMember }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
@@ -126,8 +126,8 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_RelatedMemberTreeMismatch_ReturnsMemberTreeMismatchError()
     {
         var treeId = Guid.NewGuid();
-        var baseMember = CreateMember(treeId);
-        var relatedMember = CreateMember(Guid.NewGuid());
+        FamilyMember baseMember = CreateMember(treeId);
+        FamilyMember relatedMember = CreateMember(Guid.NewGuid());
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { baseMember, relatedMember }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
@@ -150,7 +150,7 @@ public class AddRelationshipCommandHandlerTests
     public async Task HandleAsync_SameBaseAndRelatedMember_ReturnsSameFamilyMembersError()
     {
         var treeId = Guid.NewGuid();
-        var member = CreateMember(treeId);
+        FamilyMember member = CreateMember(treeId);
 
         DbSet<FamilyMember> membersDbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(membersDbSet);
