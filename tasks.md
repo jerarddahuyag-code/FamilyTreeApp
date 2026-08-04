@@ -68,35 +68,35 @@
 ### TASK-DOC-1 — Update design.md 🟢
 **What:** Reflect actual architecture (ErrorType, 2-behavior pipeline, ApiControllerBase, DbContext). DONE.
 
-### TASK-DOC-2 — Update Implementation Plan 🔴
-**What:** Update Phase 5 in implementation plan to reflect existing cookie auth (not JWT).
+### TASK-DOC-2 — Update Implementation Plan 🟢
+**What:** Updated Phase 5 to reflect cookie-based auth (not JWT). Removed FluentValidation references, ValidationPipelineBehavior, and stale gap-filling bullets.
 
-### TASK-DOC-3 — Document Missing Controllers 🔴
-**What:** Document `UsersController`, `ProfileController`, and all undocumented commands/queries in the plan.
+### TASK-DOC-3 — Document Missing Controllers 🟢
+**What:** Documented `UsersController` (CRUD + self-only delete) and `TreesController` (with RBAC policies) in the implementation plan.
 
-### TASK-CQ-1 — Relocate RelationshipType 🔴
-**What:** Move `RelationshipType.cs` from `Roster/Entities/` to `Roster/Enums/`.
+### TASK-CQ-1 — Relocate RelationshipType 🟢
+**What:** Moved `RelationshipType.cs` from `Roster/Entities/` to `Roster/Enums/`. Updated namespace and all consuming usings.
 
-### TASK-CQ-2 — Normalize Table Naming 🔴
-**What:** Normalize table naming convention (either all with module prefix or none).
+### TASK-CQ-2 — Normalize Table Naming 🟢
+**What:** Renamed `family_members` → `roster_family_members` and `family_member_relationships` → `roster_family_member_relationships`. Added EF migration `NormalizeRosterTableNames`.
 
 ### TASK-CQ-3 — Remove Dead Repositories 🟢
 **What:** Remove dead repository interfaces/implementations. (Marked DONE).
 
-### TASK-CQ-4 — Update Gender Enum 🔴
-**What:** Add `NonBinary` and `PreferNotToSay` to the `Gender` enum.
+### TASK-CQ-4 — Update Gender Enum 🟢
+**What:** Removed legacy `Other` value; enum now has `Male=0, Female=1, NonBinary=2, PreferNotToSay=3`.
 
 ---
 
 ## Missing Tests (New)
 
-### TASK-TEST-1 — FamilyMemberRelationship Tests 🔴
+### TASK-TEST-1 — FamilyMemberRelationship Tests 🟢
 **What:** Add unit tests for `FamilyMemberRelationship` entity creation and same-member constraints.
 
-### TASK-TEST-2 — AddRelationshipCommandHandler Tests 🔴
+### TASK-TEST-2 — AddRelationshipCommandHandler Tests 🟢
 **What:** Add unit tests for same-tree constraints and duplicate checking in `AddRelationshipCommandHandler`.
 
-### TASK-TEST-3 — Missing Roster Handler Tests 🔴
+### TASK-TEST-3 — Missing Roster Handler Tests 🟢
 **What:** Add unit tests for `RemoveRelationship`, `RequestVisibility`, `UpdateFamilyMember`, `DeleteFamilyMember`.
 
 ---

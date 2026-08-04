@@ -1,14 +1,11 @@
 # FamilyTreeApp — .NET 10 Phased Implementation Plan (Revised)
 
-> **Current state (last reviewed: Phase 0/1 gap-filling pass):**
+> **Current state (last reviewed: Controllers pass):**
 > Clean Architecture solution with four projects:
-> - ✅ `FamilyTreeApp.Api` — ASP.NET Core 10 API, Google OAuth cookie auth, `GlobalExceptionHandler`, `TreesController`, `AuthController`
+> - ✅ `FamilyTreeApp.Api` — ASP.NET Core 10 API, Google OAuth cookie auth, `GlobalExceptionHandler`, `TreesController`, `UsersController`, `AuthController`
 > - ✅ `FamilyTreeApp.Domain` — `User`, `Tree`, `TreeRbac`, `ExternalLogin` entities; `ProfileInfo` value object; `Result<T>`, `Error`, `DomainErrors`; CQRS interfaces
 > - ✅ `FamilyTreeApp.Application` — Users + Trees CQRS commands/queries; direct validation (inline guard clauses + domain factory validation); `IApplicationDbContext`; Scrutor DI registration
 > - ✅ `FamilyTreeApp.Infrastructure` — `ApplicationDbContext`, `UnitOfWork`, EF Core model configurations, two applied migrations, `AuthService`
->
-> **Still needed (Phase 0 gaps):** `.globalconfig`, CI workflow, test project, Redis in docker-compose
-> **Still needed (Phase 1 gaps):** `LoggingBehavior`, `TransactionBehavior`, `ITransactionalCommand`, `INotificationPublisher`, `INotificationHandler`
 >
 > See `requirements.md`, `design.md`, and `tasks.md` for the full specification.
 
@@ -197,8 +194,6 @@ FamilyTreeApp.Tests           → FamilyTreeApp.Domain, FamilyTreeApp.Applicatio
 #### FamilyTreeApp.Application ✅
 ```
 Scrutor
-FluentValidation
-FluentValidation.DependencyInjectionExtensions
 ```
 
 #### FamilyTreeApp.Infrastructure ✅
@@ -293,11 +288,6 @@ Add `redis_data:` to the `volumes:` block.
 #### ✅ `[DONE]` `FamilyTreeApp.Application/Common/Interfaces/IApplicationDbContext.cs`
 - Abstraction over `DbContext` exposing `DbSet<T>` properties and `SaveChangesAsync()`.
 
-#### ✅ `[DONE]` `FamilyTreeApp.Application/Common/Behaviors/ValidationPipelineBehavior.cs`
-- Primary constructor. Implements `ICommandHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>`.
-- Takes `ICommandHandler<,> innerHandler` + `IEnumerable<IValidator<TRequest>> validators`.
-- Runs FluentValidation; short-circuits with `Error.Validation` on failure.
-
 #### 🔴 `[TODO — TASK-1.1]` `FamilyTreeApp.Application/Common/Interfaces/ITransactionalCommand.cs`
 - Empty marker interface. Commands opt-in to transaction wrapping.
 
@@ -382,7 +372,16 @@ Add `redis_data:` to the `volumes:` block.
 - Unhandled exceptions → 500 RFC 7807 Problem Details.
 
 #### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/AuthController.cs`
+
 #### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/TreesController.cs`
+
+#### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/UsersController.cs`
+- `[Authorize]` on all endpoints
+- `GET /api/users` → GetUsersQuery
+- `GET /api/users/{id}` → GetUserByIdQuery  
+- `POST /api/users` → CreateUserCommand
+- `DELETE /api/users/{id}` → DeleteUserCommand (self-only)
+- Profile operations are part of UsersController
 
 ### 1.8 Test Project (`FamilyTreeApp.Tests`) 🔴 TASK-0.4 through TASK-1.7
 
@@ -738,94 +737,45 @@ dotnet test
 
 ---
 
-## Phase 5 — Google OIDC Auth + Token Lifecycle
+## Phase 5 — Authentication Hardening
 
-**Goal:** Implement Google OIDC authentication, API-issued JWT + refresh token management, user profile endpoints, and retrofit `[Authorize]` on all domain endpoints.
+> **Status:** 🔄 Substantially complete. Google OIDC cookie auth is implemented. Remaining: enforce `[Authorize]` on all remaining open endpoints.
 
-### 5.1 Application Layer
+**Goal:** Harden API authentication. Google OAuth cookie authentication is already implemented via `AddGoogleOpenIdConnect` + ASP.NET Core cookie scheme. No JWT is issued by the API — the session is cookie-based with a 14-day sliding expiration.
 
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/GoogleLogin/GoogleLoginCommand.cs`
-- `ICommand<Result<AuthTokenDto>>`, `ITransactionalCommand`.
-- Properties: `string GoogleIdToken`.
+### 5.1 What Is Already Done
 
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/GoogleLogin/GoogleLoginCommandHandler.cs`
-- Validates Google ID token (signature, audience, expiry).
-- Extracts claims: `sub`, `email`, `given_name`, `family_name`, `picture`.
-- Upserts `User` entity: if `ExternalLogin` exists for `(Google, sub)`, fetch existing user. Otherwise, create new `User` + `ExternalLogin`, auto-populating `ProfileInfo` from Google claims.
-- Issues API JWT access token + refresh token.
+#### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/AuthController.cs`
+- `GET /api/auth/login` → redirects to Google OAuth
+- `GET /api/auth/callback` → handles Google callback, upserts user + ExternalLogin, signs in with cookie
+- `GET /api/auth/logout` → `[Authorize]`, signs out cookie
+- `GET /api/auth/me` → `[Authorize]`, returns current user info
 
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/RefreshToken/RefreshTokenCommand.cs`
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/RefreshToken/RefreshTokenCommandHandler.cs`
-- Reads refresh token from cookie, validates, rotates (invalidates old, issues new pair).
-- Reuse detection: if a previously-rotated refresh token is presented, invalidate entire token family.
+#### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/UsersController.cs`
+- `[Authorize]` on entire controller
+- `DELETE /{id}` self-only guard (returns `Forbid()` if not own account)
 
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/Logout/LogoutCommand.cs`
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/Logout/LogoutCommandHandler.cs`
-- Blacklists the active refresh token.
+#### ✅ `[DONE]` `FamilyTreeApp.Api/Controllers/TreesController.cs`
+- `[Authorize]` on entire controller
+- `POST /{treeId}/access/{userId}` and `DELETE /{treeId}/access/{userId}` — `[Authorize(Policy = "TreeOwner")]`
 
-#### [NEW] `FamilyTreeApp.Application/Auth/Queries/GetUserProfile/`
-#### [NEW] `FamilyTreeApp.Application/Auth/Commands/UpdateUserProfile/`
-#### [NEW] `FamilyTreeApp.Application/Auth/DTOs/AuthTokenDto.cs`
+### 5.2 Remaining Work
 
-#### [NEW] `FamilyTreeApp.Application/Common/Interfaces/ITokenService.cs`
-- `GenerateAccessToken(User)`, `GenerateRefreshToken()`, `ValidateRefreshToken(string token)`.
+#### 🔴 `[TODO — TASK-SEC-ROSTERS]` `FamilyTreeApp.Api/Controllers/RosterController.cs`
+- Review all endpoints to ensure proper RBAC policies are applied.
+- `GET /members` → `[Authorize(Policy = "TreeMember")]`
+- `POST /members` → `[Authorize(Policy = "TreeAdmin")]`
+- Visibility transitions → `[Authorize(Policy = "TreeOwner")]` or `[Authorize(Policy = "TreeAdmin")]`
 
-#### [NEW] `FamilyTreeApp.Application/Common/Interfaces/IGoogleTokenValidator.cs`
-- `Task<GoogleUserInfo?> ValidateIdTokenAsync(string idToken, CancellationToken ct)`.
-
-### 5.2 Infrastructure Layer
-
-#### [NEW] `FamilyTreeApp.Infrastructure/Identity/TokenService.cs`
-- Implements `ITokenService`.
-- JWT access token: 15 min lifetime, signed with symmetric key.
-- Refresh token: 7 day lifetime, stored in DB, rotation-aware.
-
-#### [NEW] `FamilyTreeApp.Infrastructure/Identity/GoogleTokenValidator.cs`
-- Implements `IGoogleTokenValidator`.
-- Validates Google ID token using Google's JWKS endpoint.
-- Extracts claims into `GoogleUserInfo` record.
-
-#### [NEW] `FamilyTreeApp.Infrastructure/Persistence/Configurations/RefreshTokenConfiguration.cs`
-- `RefreshToken` entity: `Guid Id`, `Guid UserId`, `string Token`, `DateTime ExpiresAt`, `bool IsRevoked`, `Guid? ReplacedByTokenId`.
-
-### 5.3 API Layer
-
-#### [NEW] `FamilyTreeApp.API/Controllers/AuthController.cs`
-- `POST /api/v1/auth/google` → `[AllowAnonymous]` — validates Google ID token, upserts user, returns access token + sets refresh cookie.
-- `POST /api/v1/auth/token/refresh/` → `[AllowAnonymous]` (cookie required).
-- `POST /api/v1/auth/logout/` → `[Authorize]`.
-
-#### [NEW] `FamilyTreeApp.API/Controllers/UsersController.cs`
-- `GET /api/v1/users/me/` → `[Authorize]`
-- `PUT /api/v1/users/me/` → `[Authorize]`
-
-#### [MODIFY] All existing controllers
-- Replace `[AllowAnonymous]` with `[Authorize]` where appropriate.
-
-### 5.4 Tests
-
-#### [NEW] `FamilyTreeApp.Tests/Unit/Application/GoogleLoginCommandHandlerTests.cs`
-- Valid Google token → user created, tokens issued.
-- Existing user → user found, tokens issued (no duplicate).
-- Invalid Google token → `Result.Failure`.
-
-#### [NEW] `FamilyTreeApp.Tests/Unit/Application/RefreshTokenCommandHandlerTests.cs`
-- Valid refresh → rotated.
-- Expired refresh → `Result.Failure`.
-- Reused token → entire family invalidated.
-
-### 5.5 Test Gate
+### 5.3 Test Gate
 
 ```bash
-dotnet ef migrations add AddRefreshTokens --project FamilyTreeApp.Infrastructure --startup-project FamilyTreeApp.API
-dotnet ef database update --project FamilyTreeApp.Infrastructure --startup-project FamilyTreeApp.API
 dotnet build --warnaserror
 dotnet test
 ```
 
-- Auth flow unit tests pass.
-- All Phase 2–4 unit tests still pass.
-- CI pipeline is green.
+- All existing 50 unit tests pass.
+- No unauthenticated endpoints exposed beyond `AuthController` login/callback.
 
 ---
 

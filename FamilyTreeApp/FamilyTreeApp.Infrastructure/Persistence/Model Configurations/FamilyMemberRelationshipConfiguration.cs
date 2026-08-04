@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Domain.Roster.Entities;
+using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +8,7 @@ public class FamilyMemberRelationshipConfiguration : IEntityTypeConfiguration<Fa
 {
     public void Configure(EntityTypeBuilder<FamilyMemberRelationship> builder)
     {
-        builder.ToTable("family_member_relationships");
+        builder.ToTable("roster_family_member_relationships");
         builder.HasKey(fmr => fmr.FamilyMemberRelationshipId);
         builder.Property(fmr => fmr.FamilyMemberRelationshipId).HasColumnName("family_member_relationship_id");
         builder.Property(fmr => fmr.TreeId).HasColumnName("tree_id").IsRequired();

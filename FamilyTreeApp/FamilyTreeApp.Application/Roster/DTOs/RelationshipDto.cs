@@ -1,4 +1,4 @@
-using FamilyTreeApp.Domain.Roster.Entities;
+using FamilyTreeApp.Domain.Roster.Enums;
 
 namespace FamilyTreeApp.Application.Roster.DTOs;
 

@@ -1,4 +1,4 @@
-﻿namespace FamilyTreeApp.Domain.Roster.Entities;
+namespace FamilyTreeApp.Domain.Roster.Enums;
 
 public enum RelationshipType
 {

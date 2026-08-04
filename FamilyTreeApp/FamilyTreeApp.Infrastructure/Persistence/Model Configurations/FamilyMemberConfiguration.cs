@@ -8,7 +8,7 @@ public class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyMember>
 {
     public void Configure(EntityTypeBuilder<FamilyMember> builder)
     {
-        builder.ToTable("family_members");
+        builder.ToTable("roster_family_members");
         builder.HasKey(t => t.FamilyMemberId);
         builder.Property(t => t.FamilyMemberId).HasColumnName("family_member_id");
         builder.Property(t => t.TreeId).HasColumnName("tree_id").IsRequired();

@@ -1,5 +1,6 @@
-﻿using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Roster.Enums;
 
 namespace FamilyTreeApp.Domain.Roster.Entities;
 
