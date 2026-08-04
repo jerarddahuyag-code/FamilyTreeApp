@@ -32,6 +32,8 @@ public static class DomainErrors
         public readonly static Error InvalidVisibilityStatus = new("FamilyMember.InvalidVisibilityStatus", "The provided visibility status is invalid.", ErrorType.Validation);
         public readonly static Error FamilyMemberDeleted = new("FamilyMember.Deleted", "The family member has been deleted.", ErrorType.Conflict);
         public readonly static Error InvalidVisibilityTransition = new("FamilyMember.InvalidVisibilityTransition", "The requested visibility transition is invalid.", ErrorType.Validation);
+        public readonly static Error FamilyMemberClaimed = new("FamilyMember.Claimed", "The family member has already been claimed by another user.", ErrorType.Conflict);
+        public readonly static Error UserNotAuthorizedToUnclaim = new("FamilyMember.UserNotAuthorizedToUnclaim", "The user is not authorized to unclaim this family member.", ErrorType.Unauthorized);
     }
 
     public static class FamilyMemberRelationshipErrors

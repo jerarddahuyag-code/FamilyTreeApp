@@ -6,7 +6,7 @@ using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
-public record AddFamilyMemberCommand : IRequest<Guid>, ITransactionalCommand
+public record AddFamilyMemberCommand : IRequest<Guid>
 {
     public required Guid TreeId { get; init; }
     public Guid? ClaimedByUserId { get; init; }

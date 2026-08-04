@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
-public record UpdateFamilyMemberCommand : IRequest<bool>, ITransactionalCommand
+public record UpdateFamilyMemberProfileCommand : IRequest<bool>, ITransactionalCommand
 {
     public required Guid FamilyMemberId { get; init; }
     public required Guid TreeId { get; init; }
@@ -15,12 +15,12 @@ public record UpdateFamilyMemberCommand : IRequest<bool>, ITransactionalCommand
     public Guid? ClaimedByUserId { get; init; }
 }
 
-public class UpdateFamilyMemberCommandHandler(
+public class UpdateFamilyMemberProfileCommandHandler(
     IApplicationDbContext dbContext,
     IUnitOfWork unitOfWork)
-    : ICommandHandler<UpdateFamilyMemberCommand, bool>
+    : ICommandHandler<UpdateFamilyMemberProfileCommand, bool>
 {
-    public async Task<Result<bool>> HandleAsync(UpdateFamilyMemberCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> HandleAsync(UpdateFamilyMemberProfileCommand command, CancellationToken cancellationToken = default)
     {
         FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId, cancellationToken);
         if (member is null || member.TreeId != command.TreeId)
@@ -28,13 +28,7 @@ public class UpdateFamilyMemberCommandHandler(
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
         }
 
-        // Create updated family member with same id & new info
-        Result<FamilyMember> result = FamilyMember.Create(
-            member.FamilyMemberId,
-            member.TreeId,
-            command.ClaimedByUserId ?? member.ClaimedByUserId,
-            member.VisibilityStatus,
-            command.ProfileInfo);
+        var result = member.UpdateProfile(command.ProfileInfo);
 
         if (result.IsFailure)
         {

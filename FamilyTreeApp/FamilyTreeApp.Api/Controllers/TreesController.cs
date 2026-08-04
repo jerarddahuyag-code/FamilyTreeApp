@@ -52,6 +52,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Policy = "TreeAdmin")]
     public async Task<IActionResult> UpdateTree(Guid id, [FromBody] UpdateTreeCommand request, [FromServices] ICommandHandler<UpdateTreeCommand, bool> handler, CancellationToken cancellationToken)
     {
         request = request with { TreeId = id };
@@ -65,6 +66,7 @@ public class TreesController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "TreeAdmin")]
     public async Task<IActionResult> DeleteTree(Guid id, [FromServices] ICommandHandler<DeleteTreeCommand, bool> handler, CancellationToken cancellationToken)
     {
         Result<bool> result = await handler.HandleAsync(new DeleteTreeCommand { TreeId = id }, cancellationToken);

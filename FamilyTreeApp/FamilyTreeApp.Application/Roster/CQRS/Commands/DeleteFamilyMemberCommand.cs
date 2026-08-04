@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
-public record DeleteFamilyMemberCommand : IRequest<bool>, ITransactionalCommand
+public record DeleteFamilyMemberCommand : IRequest<bool>
 {
     public required Guid TreeId { get; init; }
     public required Guid FamilyMemberId { get; init; }

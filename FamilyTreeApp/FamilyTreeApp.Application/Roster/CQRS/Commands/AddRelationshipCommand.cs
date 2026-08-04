@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
-public record AddRelationshipCommand : IRequest<Guid>, ITransactionalCommand
+public record AddRelationshipCommand : IRequest<Guid>
 {
     public required Guid TreeId { get; init; }
     public required Guid BaseFamilyMemberId { get; init; }

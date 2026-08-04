@@ -51,6 +51,30 @@ public class FamilyMember : AggregateRoot
         return Result.Success(familyMember);
     }
 
+    public Result<FamilyMember> UpdateProfile(ProfileInfo profileInfo)
+    {
+        if (profileInfo is null)
+        {
+            return Result.Failure<FamilyMember>(DomainErrors.FamilyMemberErrors.InvalidProfile);
+        }
+
+        ProfileInfo = profileInfo;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success(this);
+    }
+
+    public Result UpdateClaimedBy(Guid? userId)
+    {
+        if (ClaimedByUserId == userId)
+        {
+            return Result.Success();
+        }
+
+        ClaimedByUserId = userId;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
     public Result TransitionToVisibility(VisibilityStatus visibilityStatus)
     {
         if (CanTransitionToVisibility(visibilityStatus))

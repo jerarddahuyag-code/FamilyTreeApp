@@ -2,8 +2,10 @@ using FamilyTreeApp.Application.Roster.CQRS.Commands;
 using FamilyTreeApp.Application.Roster.CQRS.Queries;
 using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Api.Controllers;
 
@@ -51,17 +53,80 @@ public class RosterController : ApiControllerBase
         return Created($"/api/trees/{treeId}/members/{result.Value}", new { FamilyMemberId = result.Value });
     }
 
-    [HttpPut("members/{memberId:guid}")]
+    [HttpPut("members/{memberId:guid}/profile")]
     [Authorize(Policy = "TreeAdmin")]
-    public async Task<IActionResult> UpdateMember(
+    public async Task<IActionResult> UpdateMemberProfile(
         Guid treeId,
         Guid memberId,
-        [FromBody] UpdateFamilyMemberCommand request,
-        [FromServices] ICommandHandler<UpdateFamilyMemberCommand, bool> handler,
+        [FromBody] UpdateFamilyMemberProfileCommand request,
+        [FromServices] ICommandHandler<UpdateFamilyMemberProfileCommand, bool> handler,
         CancellationToken cancellationToken)
     {
         request = request with { TreeId = treeId, FamilyMemberId = memberId };
         Result<bool> result = await handler.HandleAsync(request, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
+    [HttpPut("members/{memberId:guid}/user")]
+    [Authorize(Policy = "TreeAdmin")]
+    public async Task<IActionResult> UpdateMemberClaimedUser(
+        Guid treeId,
+        Guid memberId,
+        [FromBody] UpdateFamilyMemberClaimedUserCommand request,
+        [FromServices] ICommandHandler<UpdateFamilyMemberClaimedUserCommand, bool> handler,
+        CancellationToken cancellationToken)
+    {
+        request = request with { TreeId = treeId, FamilyMemberId = memberId };
+        Result<bool> result = await handler.HandleAsync(request, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
+    [HttpPut("members/{memberId:guid}/claim")]
+    [Authorize(Policy = "TreeMember")]
+    public async Task<IActionResult> ClaimMember(
+        Guid treeId,
+        Guid memberId,
+        [FromServices] ICommandHandler<ClaimFamilyMemberCommand, bool> handler,
+        CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+
+        Result<bool> result = await handler.HandleAsync(
+            new ClaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, UserId = userId },
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
+    [HttpPut("members/{memberId:guid}/unclaim")]
+    [Authorize(Policy = "TreeMember")]
+    public async Task<IActionResult> UnclaimMember(
+        Guid treeId,
+        Guid memberId,
+        [FromServices] ICommandHandler<UnclaimFamilyMemberCommand, bool> handler,
+        CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+
+        Result<bool> result = await handler.HandleAsync(
+            new UnclaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, UserId = userId },
+            cancellationToken);
+
         if (result.IsFailure)
         {
             return HandleFailure(result);

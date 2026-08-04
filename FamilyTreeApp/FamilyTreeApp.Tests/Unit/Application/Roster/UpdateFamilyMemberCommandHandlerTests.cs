@@ -16,11 +16,11 @@ public class UpdateFamilyMemberCommandHandlerTests
 {
     private readonly IApplicationDbContext _dbContextMock = Substitute.For<IApplicationDbContext>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly UpdateFamilyMemberCommandHandler _handler;
+    private readonly UpdateFamilyMemberProfileCommandHandler _handler;
 
     public UpdateFamilyMemberCommandHandlerTests()
     {
-        _handler = new UpdateFamilyMemberCommandHandler(_dbContextMock, _unitOfWorkMock);
+        _handler = new UpdateFamilyMemberProfileCommandHandler(_dbContextMock, _unitOfWorkMock);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class UpdateFamilyMemberCommandHandlerTests
         _dbContextMock.FamilyMembers.Returns(dbSet);
 
         var updatedProfile = new ProfileInfo { FirstName = "UpdatedFirst", LastName = "UpdatedLast" };
-        var command = new UpdateFamilyMemberCommand
+        var command = new UpdateFamilyMemberProfileCommand
         {
             TreeId = treeId,
             FamilyMemberId = member.FamilyMemberId,
@@ -58,7 +58,7 @@ public class UpdateFamilyMemberCommandHandlerTests
         DbSet<FamilyMember> dbSet = new List<FamilyMember>().BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
 
-        var command = new UpdateFamilyMemberCommand
+        var command = new UpdateFamilyMemberProfileCommand
         {
             TreeId = Guid.NewGuid(),
             FamilyMemberId = Guid.NewGuid(),
@@ -81,7 +81,7 @@ public class UpdateFamilyMemberCommandHandlerTests
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
 
-        var command = new UpdateFamilyMemberCommand
+        var command = new UpdateFamilyMemberProfileCommand
         {
             TreeId = commandTreeId,
             FamilyMemberId = member.FamilyMemberId,
@@ -103,7 +103,7 @@ public class UpdateFamilyMemberCommandHandlerTests
         DbSet<FamilyMember> dbSet = new List<FamilyMember> { member }.BuildMockDbSet();
         _dbContextMock.FamilyMembers.Returns(dbSet);
 
-        var command = new UpdateFamilyMemberCommand
+        var command = new UpdateFamilyMemberProfileCommand
         {
             TreeId = treeId,
             FamilyMemberId = member.FamilyMemberId,

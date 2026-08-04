@@ -3,6 +3,7 @@ using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
+using FamilyTreeApp.Domain.Trees.Enums;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public class GetFamilyMembersQueryHandler(
     public async Task<Result<List<FamilyMemberDto>>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
     {
         var isAdmin = await dbContext.TreeRbacs
-            .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == Domain.Trees.Enums.TreeRole.Admin || r.TreeRole == Domain.Trees.Enums.TreeRole.Owner), cancellationToken);
+            .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == TreeRole.Admin || r.TreeRole == TreeRole.Owner), cancellationToken);
 
         List<FamilyMember> members = await dbContext.FamilyMembers.Include(m => m.Relationships).Where(m => m.TreeId == query.TreeId).ToListAsync(cancellationToken);
 

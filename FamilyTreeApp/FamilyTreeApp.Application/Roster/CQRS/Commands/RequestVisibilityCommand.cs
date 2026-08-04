@@ -21,8 +21,11 @@ public class RequestVisibilityCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(RequestVisibilityCommand command, CancellationToken cancellationToken = default)
     {
-        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId, cancellationToken);
-        if (member is null || member.TreeId != command.TreeId)
+        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => 
+            m.FamilyMemberId == command.FamilyMemberId 
+            && m.TreeId == command.TreeId,
+            cancellationToken);
+        if (member is null)
         {
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
         }
