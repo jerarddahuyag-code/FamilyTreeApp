@@ -2,8 +2,8 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
-using FamilyTreeApp.Domain.Roster.Interfaces;
 using FamilyTreeApp.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -16,13 +16,13 @@ public record UpdateFamilyMemberCommand : IRequest<bool>, ITransactionalCommand
 }
 
 public class UpdateFamilyMemberCommandHandler(
-    IFamilyMemberRepository familyMemberRepository,
+    IApplicationDbContext dbContext,
     IUnitOfWork unitOfWork)
     : ICommandHandler<UpdateFamilyMemberCommand, bool>
 {
     public async Task<Result<bool>> HandleAsync(UpdateFamilyMemberCommand command, CancellationToken cancellationToken = default)
     {
-        FamilyMember? member = await familyMemberRepository.GetByIdAsync(command.FamilyMemberId, cancellationToken);
+        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId, cancellationToken);
         if (member is null || member.TreeId != command.TreeId)
         {
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
@@ -41,7 +41,7 @@ public class UpdateFamilyMemberCommandHandler(
             return Result.Failure<bool>(result.Error);
         }
 
-        familyMemberRepository.Update(result.Value);
+        dbContext.FamilyMembers.Update(result.Value);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(true);
     }

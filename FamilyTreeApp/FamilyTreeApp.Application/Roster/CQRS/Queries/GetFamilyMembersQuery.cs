@@ -3,7 +3,6 @@ using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.Roster.Interfaces;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -17,16 +16,15 @@ public record GetFamilyMembersQuery : IRequest<List<FamilyMemberDto>>
 }
 
 public class GetFamilyMembersQueryHandler(
-    IFamilyMemberRepository familyMemberRepository,
     IApplicationDbContext dbContext)
     : IQueryHandler<GetFamilyMembersQuery, List<FamilyMemberDto>>
 {
     public async Task<Result<List<FamilyMemberDto>>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
     {
-        bool isAdmin = await dbContext.TreeRbacs
+        var isAdmin = await dbContext.TreeRbacs
             .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == Domain.Trees.Enums.TreeRole.Admin || r.TreeRole == Domain.Trees.Enums.TreeRole.Owner), cancellationToken);
 
-        List<FamilyMember> members = await familyMemberRepository.GetByTreeIdAsync(query.TreeId, cancellationToken);
+        List<FamilyMember> members = await dbContext.FamilyMembers.Include(m => m.Relationships).Where(m => m.TreeId == query.TreeId).ToListAsync(cancellationToken);
 
         // Fetch linked users for Read-Through Profile Merge
         var claimedUserIds = members

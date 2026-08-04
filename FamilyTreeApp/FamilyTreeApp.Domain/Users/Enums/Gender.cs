@@ -1,8 +1,10 @@
-﻿namespace FamilyTreeApp.Domain.Users.Enums;
+namespace FamilyTreeApp.Domain.Users.Enums;
 
 public enum Gender
 {
     Male = 0,
     Female,
-    Other
+    Other,
+    NonBinary = 3,
+    PreferNotToSay = 4
 }

@@ -1,9 +1,9 @@
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Application.Roster.CQRS.Commands;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.Roster.Interfaces;
 using FamilyTreeApp.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
@@ -12,13 +12,13 @@ namespace FamilyTreeApp.Tests.Unit.Application.Roster;
 
 public class AddFamilyMemberCommandHandlerTests
 {
-    private readonly IFamilyMemberRepository _repositoryMock = Substitute.For<IFamilyMemberRepository>();
+    private readonly IApplicationDbContext _dbContextMock = Substitute.For<IApplicationDbContext>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly AddFamilyMemberCommandHandler _handler;
 
     public AddFamilyMemberCommandHandlerTests()
     {
-        _handler = new AddFamilyMemberCommandHandler(_repositoryMock, _unitOfWorkMock);
+        _handler = new AddFamilyMemberCommandHandler(_dbContextMock, _unitOfWorkMock);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class AddFamilyMemberCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeEmpty();
-        _repositoryMock.Received(1).Add(Arg.Any<FamilyMember>());
+        _dbContextMock.FamilyMembers.Received(1).Add(Arg.Any<FamilyMember>());
         await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

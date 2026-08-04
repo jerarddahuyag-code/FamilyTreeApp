@@ -19,7 +19,7 @@ public class RosterController : ApiControllerBase
         [FromServices] IQueryHandler<GetFamilyMembersQuery, List<FamilyMemberDto>> handler,
         CancellationToken cancellationToken)
     {
-        Guid userId = Guid.Parse(HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var userId = Guid.Parse(HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
 
         Result<List<FamilyMemberDto>> result = await handler.HandleAsync(
             new GetFamilyMembersQuery { TreeId = treeId, UserId = userId },

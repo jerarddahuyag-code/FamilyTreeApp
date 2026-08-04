@@ -2,7 +2,7 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
-using FamilyTreeApp.Domain.Roster.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -15,15 +15,14 @@ public record AddRelationshipCommand : IRequest<Guid>, ITransactionalCommand
 }
 
 public class AddRelationshipCommandHandler(
-    IFamilyMemberRepository familyMemberRepository,
-    IFamilyMemberRelationshipRepository relationshipRepository,
+    IApplicationDbContext dbContext,
     IUnitOfWork unitOfWork)
     : ICommandHandler<AddRelationshipCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(AddRelationshipCommand command, CancellationToken cancellationToken = default)
     {
-        FamilyMember? baseMember = await familyMemberRepository.GetByIdAsync(command.BaseFamilyMemberId, cancellationToken);
-        FamilyMember? relatedMember = await familyMemberRepository.GetByIdAsync(command.RelatedFamilyMemberId, cancellationToken);
+        FamilyMember? baseMember = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.BaseFamilyMemberId, cancellationToken);
+        FamilyMember? relatedMember = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.RelatedFamilyMemberId, cancellationToken);
 
         if (baseMember is null || relatedMember is null)
         {
@@ -48,7 +47,7 @@ public class AddRelationshipCommandHandler(
         }
 
         FamilyMemberRelationship relationship = result.Value;
-        relationshipRepository.Add(relationship);
+        dbContext.FamilyMemberRelationships.Add(relationship);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(relationship.FamilyMemberRelationshipId);

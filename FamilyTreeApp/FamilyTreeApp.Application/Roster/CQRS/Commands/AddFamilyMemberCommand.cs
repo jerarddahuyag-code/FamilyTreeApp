@@ -2,7 +2,6 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.Roster.Interfaces;
 using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
@@ -16,7 +15,7 @@ public record AddFamilyMemberCommand : IRequest<Guid>, ITransactionalCommand
 }
 
 public class AddFamilyMemberCommandHandler(
-    IFamilyMemberRepository familyMemberRepository,
+    IApplicationDbContext dbContext,
     IUnitOfWork unitOfWork)
     : ICommandHandler<AddFamilyMemberCommand, Guid>
 {
@@ -35,7 +34,7 @@ public class AddFamilyMemberCommandHandler(
         }
 
         FamilyMember member = result.Value;
-        familyMemberRepository.Add(member);
+        dbContext.FamilyMembers.Add(member);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(member.FamilyMemberId);

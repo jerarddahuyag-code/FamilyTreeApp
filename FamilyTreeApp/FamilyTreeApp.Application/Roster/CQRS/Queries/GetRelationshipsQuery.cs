@@ -1,7 +1,8 @@
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Roster.Entities;
-using FamilyTreeApp.Domain.Roster.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Queries;
 
@@ -12,7 +13,7 @@ public record GetRelationshipsQuery : IRequest<List<RelationshipDto>>
 }
 
 public class GetRelationshipsQueryHandler(
-    IFamilyMemberRelationshipRepository relationshipRepository)
+    IApplicationDbContext dbContext)
     : IQueryHandler<GetRelationshipsQuery, List<RelationshipDto>>
 {
     public async Task<Result<List<RelationshipDto>>> HandleAsync(GetRelationshipsQuery query, CancellationToken cancellationToken = default)
@@ -20,12 +21,11 @@ public class GetRelationshipsQueryHandler(
         List<FamilyMemberRelationship> relationships;
         if (query.MemberId.HasValue)
         {
-            relationships = await relationshipRepository.GetByMemberIdAsync(query.MemberId.Value, cancellationToken);
-            relationships = relationships.Where(r => r.TreeId == query.TreeId).ToList();
+            relationships = await dbContext.FamilyMemberRelationships.Where(r => (r.BaseFamilyMemberId == query.MemberId.Value || r.RelatedFamilyMemberId == query.MemberId.Value) && r.TreeId == query.TreeId).ToListAsync(cancellationToken);
         }
         else
         {
-            relationships = await relationshipRepository.GetByTreeIdAsync(query.TreeId, cancellationToken);
+            relationships = await dbContext.FamilyMemberRelationships.Where(r => r.TreeId == query.TreeId).ToListAsync(cancellationToken);
         }
 
         var dtos = relationships.Select(r => new RelationshipDto

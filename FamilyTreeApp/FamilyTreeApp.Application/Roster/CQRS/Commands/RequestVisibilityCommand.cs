@@ -3,7 +3,7 @@ using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.Roster.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -15,13 +15,13 @@ public record RequestVisibilityCommand : IRequest<bool>, ITransactionalCommand
 }
 
 public class RequestVisibilityCommandHandler(
-    IFamilyMemberRepository familyMemberRepository,
+    IApplicationDbContext dbContext,
     IUnitOfWork unitOfWork)
     : ICommandHandler<RequestVisibilityCommand, bool>
 {
     public async Task<Result<bool>> HandleAsync(RequestVisibilityCommand command, CancellationToken cancellationToken = default)
     {
-        FamilyMember? member = await familyMemberRepository.GetByIdAsync(command.FamilyMemberId, cancellationToken);
+        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId, cancellationToken);
         if (member is null || member.TreeId != command.TreeId)
         {
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
@@ -33,7 +33,7 @@ public class RequestVisibilityCommandHandler(
             return Result.Failure<bool>(result.Error);
         }
 
-        familyMemberRepository.Update(member);
+        dbContext.FamilyMembers.Update(member);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(true);
     }
