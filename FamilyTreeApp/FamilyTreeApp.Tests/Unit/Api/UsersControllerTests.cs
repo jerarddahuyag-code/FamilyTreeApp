@@ -48,7 +48,7 @@ public class UsersControllerTests
     }
 
     [Fact]
-    public async Task DeleteUser_WhenUserIsAdmin_ReturnsNoContent()
+    public async Task DeleteUser_WhenUserIsAdminButNotSelf_ReturnsForbid()
     {
         // Arrange
         var currentUserId = Guid.NewGuid();
@@ -66,16 +66,13 @@ public class UsersControllerTests
             HttpContext = new DefaultHttpContext { User = claimsPrincipal }
         };
 
-        _deleteUserHandler.HandleAsync(Arg.Any<DeleteUserCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Success(true));
-
         // Act
         var result = await _sut.DeleteUser(targetUserId, _deleteUserHandler, CancellationToken.None);
 
         // Assert
-        result.Should().BeOfType<NoContentResult>();
-        await _deleteUserHandler.Received(1).HandleAsync(
-            Arg.Is<DeleteUserCommand>(c => c != null && c.UserId == targetUserId),
+        result.Should().BeOfType<ForbidResult>();
+        await _deleteUserHandler.DidNotReceive().HandleAsync(
+            Arg.Any<DeleteUserCommand>(),
             Arg.Any<CancellationToken>());
     }
 
