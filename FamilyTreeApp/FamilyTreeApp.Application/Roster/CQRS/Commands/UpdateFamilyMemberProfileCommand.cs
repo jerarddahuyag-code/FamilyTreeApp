@@ -12,7 +12,6 @@ public record UpdateFamilyMemberProfileCommand : IRequest<bool>, ITransactionalC
     public required Guid FamilyMemberId { get; init; }
     public required Guid TreeId { get; init; }
     public required ProfileInfo ProfileInfo { get; init; }
-    public Guid? ClaimedByUserId { get; init; }
 }
 
 public class UpdateFamilyMemberProfileCommandHandler(

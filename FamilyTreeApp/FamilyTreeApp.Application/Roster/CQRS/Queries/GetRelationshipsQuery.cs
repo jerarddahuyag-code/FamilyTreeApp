@@ -18,14 +18,10 @@ public class GetRelationshipsQueryHandler(
 {
     public async Task<Result<List<RelationshipDto>>> HandleAsync(GetRelationshipsQuery query, CancellationToken cancellationToken = default)
     {
-        List<FamilyMemberRelationship> relationships;
+        FamilyMemberRelationship[] relationships = [];
         if (query.MemberId.HasValue)
         {
-            relationships = await dbContext.FamilyMemberRelationships.Where(r => (r.BaseFamilyMemberId == query.MemberId.Value || r.RelatedFamilyMemberId == query.MemberId.Value) && r.TreeId == query.TreeId).ToListAsync(cancellationToken);
-        }
-        else
-        {
-            relationships = await dbContext.FamilyMemberRelationships.Where(r => r.TreeId == query.TreeId).ToListAsync(cancellationToken);
+            relationships = await dbContext.FamilyMemberRelationships.Where(r => (r.BaseFamilyMemberId == query.MemberId.Value || r.RelatedFamilyMemberId == query.MemberId.Value) && r.TreeId == query.TreeId).ToArrayAsync(cancellationToken);
         }
 
         var dtos = relationships.Select(r => new RelationshipDto
