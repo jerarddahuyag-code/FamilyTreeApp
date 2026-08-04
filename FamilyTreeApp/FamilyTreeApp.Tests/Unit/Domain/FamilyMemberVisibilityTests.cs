@@ -10,7 +10,7 @@ namespace FamilyTreeApp.Tests.Unit.Domain;
 public class FamilyMemberVisibilityTests
 {
     [Fact]
-    public void TransitionToVisbility_FromHiddenToPending_ReturnsSuccess()
+    public void TransitionToVisibility_FromHiddenToPending_ReturnsSuccess()
     {
         FamilyMember member = FamilyMember.Create(
             Guid.NewGuid(),
@@ -19,14 +19,14 @@ public class FamilyMemberVisibilityTests
             VisibilityStatus.Hidden,
             CreateProfile()).Value;
 
-        Result result = member.TransitionToVisbility(VisibilityStatus.Pending);
+        Result result = member.TransitionToVisibility(VisibilityStatus.Pending);
 
         result.IsSuccess.Should().BeTrue();
         member.VisibilityStatus.Should().Be(VisibilityStatus.Pending);
     }
 
     [Fact]
-    public void TransitionToVisbility_FromPendingToVisible_ReturnsSuccess()
+    public void TransitionToVisibility_FromPendingToVisible_ReturnsSuccess()
     {
         FamilyMember member = FamilyMember.Create(
             Guid.NewGuid(),
@@ -35,15 +35,15 @@ public class FamilyMemberVisibilityTests
             VisibilityStatus.Hidden,
             CreateProfile()).Value;
 
-        member.TransitionToVisbility(VisibilityStatus.Pending);
-        Result result = member.TransitionToVisbility(VisibilityStatus.Visible);
+        member.TransitionToVisibility(VisibilityStatus.Pending);
+        Result result = member.TransitionToVisibility(VisibilityStatus.Visible);
 
         result.IsSuccess.Should().BeTrue();
         member.VisibilityStatus.Should().Be(VisibilityStatus.Visible);
     }
 
     [Fact]
-    public void TransitionToVisbility_FromVisibleToPending_ReturnsFailure()
+    public void TransitionToVisibility_FromVisibleToPending_ReturnsFailure()
     {
         FamilyMember member = FamilyMember.Create(
             Guid.NewGuid(),
@@ -52,10 +52,10 @@ public class FamilyMemberVisibilityTests
             VisibilityStatus.Hidden,
             CreateProfile()).Value;
 
-        member.TransitionToVisbility(VisibilityStatus.Pending);
-        member.TransitionToVisbility(VisibilityStatus.Visible);
+        member.TransitionToVisibility(VisibilityStatus.Pending);
+        member.TransitionToVisibility(VisibilityStatus.Visible);
 
-        Result result = member.TransitionToVisbility(VisibilityStatus.Pending);
+        Result result = member.TransitionToVisibility(VisibilityStatus.Pending);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.FamilyMemberErrors.InvalidVisibilityTransition);

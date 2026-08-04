@@ -1,7 +1,7 @@
 # FamilyTreeApp — Technical Design
 
 > **Status:** Living document. Updated at the end of each phase.
-> **Last updated:** Phase 2 Trees + RBAC complete
+> **Last updated:** Phase 3 Roster complete
 
 ---
 
@@ -21,13 +21,12 @@ These tests avoid infrastructure-specific concerns such as cancellation-token pr
 ```
 FamilyTreeApp/                              ← Solution root
 ├── .editorconfig                           ✅ EXISTS
-├── .globalconfig                           ✅ EXISTS (TASK-0.1)
-├── .github/workflows/ci.yml               ✅ EXISTS (TASK-0.3)
-├── docker-compose.yml                      ✅ EXISTS — Redis service added (TASK-0.2)
+├── .globalconfig                           ✅ EXISTS
+├── .github/workflows/ci.yml                ✅ EXISTS
+├── docker-compose.yml                      ✅ EXISTS — Redis service added
 ├── requirements.md                         ✅ EXISTS
 ├── design.md                               ✅ EXISTS
 ├── tasks.md                                ✅ EXISTS
-├── implementation_plan.md                  ✅ EXISTS
 └── FamilyTreeApp/
 	├── FamilyTreeApp.Domain/               ✅ EXISTS — Zero external dependencies
 	│   ├── Common/
@@ -39,7 +38,7 @@ FamilyTreeApp/                              ← Solution root
 	│   │   ├── Result{T}.cs                ✅
 	│   │   ├── AggregateRoot.cs            ✅
 	│   │   └── Errors/
-	│   │       ├── Error.cs                ✅
+	│   │       ├── Error.cs                ✅ (Contains ErrorType enum)
 	│   │       └── DomainErrors.cs         ✅
 	│   ├── Users/
 	│   │   ├── Entities/User.cs            ✅
@@ -48,21 +47,28 @@ FamilyTreeApp/                              ← Solution root
 	│   ├── Trees/
 	│   │   ├── Entities/Tree.cs            ✅
 	│   │   └── Entities/TreeRbac.cs        ✅
-	│   └── ValueObjects/ProfileInfo.cs     ✅
+	│   ├── Roster/
+	│   │   ├── Entities/FamilyMember.cs    ✅
+	│   │   ├── Entities/FamilyMemberRelationship.cs ✅
+	│   │   └── Enums/
+	│   │       ├── VisibilityStatus.cs     ✅
+	│   │       └── RelationshipType.cs     ✅
+	│   └── ValueObjects/ProfileInfo.cs     ✅ (Implemented as a C# record)
 	│
 	├── FamilyTreeApp.Application/          ✅ EXISTS
 	│   ├── Common/
 	│   │   ├── Behaviors/
-	│   │   │   ├── LoggingBehavior.cs              ✅ (TASK-1.2)
-	│   │   │   └── TransactionBehavior.cs          ✅ (TASK-1.3)
+	│   │   │   ├── LoggingBehavior.cs              ✅
+	│   │   │   └── TransactionBehavior.cs          ✅
 	│   │   └── Interfaces/
-	│   │       ├── IApplicationDbContext.cs         ✅ EXISTS
-	│   │       ├── ITransactionalCommand.cs         ✅ (TASK-1.1)
-	│   │       ├── INotificationPublisher.cs        ✅ (TASK-1.4)
-	│   │       └── INotificationHandler.cs          ✅ (TASK-1.5)
-	│   ├── Users/CQRS/                             ✅
+	│   │       ├── IApplicationDbContext.cs         ✅
+	│   │       ├── ITransactionalCommand.cs         ✅
+	│   │       ├── INotificationPublisher.cs        ✅
+	│   │       └── INotificationHandler.cs          ✅
+	│   ├── Users/CQRS/                             ✅ (Includes Users CRUD & Profile Update)
 	│   ├── Trees/CQRS/                             ✅
-	│   └── DependencyInjection.cs                  ✅ (TASK-1.6)
+	│   ├── Roster/CQRS/                            ✅
+	│   └── DependencyInjection.cs                  ✅ (Scrutor decoration)
 	│
 	├── FamilyTreeApp.Infrastructure/       ✅ EXISTS
 	│   ├── Persistence/
@@ -74,39 +80,29 @@ FamilyTreeApp/                              ← Solution root
 	│   └── DependencyInjection.cs          ✅
 	│
 	├── FamilyTreeApp.Api/                  ✅ EXISTS
-	│   ├── Authorization/                  ✅ (TASK-2.1)
-	│   │   ├── TreeRoles.cs                ✅ (TASK-2.1)
-	│   │   ├── TreeOwnerRequirement.cs     ✅ (TASK-2.1)
-	│   │   ├── TreeAdminRequirement.cs     ✅ (TASK-2.1)
-	│   │   ├── TreeMemberRequirement.cs    ✅ (TASK-2.1)
-	│   │   └── TreeAuthorizationHandler.cs ✅ (TASK-2.1, TASK-2.2)
+	│   ├── Authorization/                  ✅
+	│   │   ├── TreeRoles.cs                ✅
+	│   │   ├── TreeOwnerRequirement.cs     ✅
+	│   │   ├── TreeAdminRequirement.cs     ✅
+	│   │   ├── TreeMemberRequirement.cs    ✅
+	│   │   └── TreeAuthorizationHandler.cs ✅
 	│   ├── Controllers/
+	│   │   ├── ApiControllerBase.cs        ✅
 	│   │   ├── AuthController.cs           ✅
-	│   │   └── TreesController.cs          ✅
+	│   │   ├── TreesController.cs          ✅
+	│   │   ├── UsersController.cs          ✅
+	│   │   ├── ProfileController.cs        ✅
+	│   │   └── RosterController.cs         ✅
 	│   ├── Middleware/GlobalExceptionHandler.cs  ✅
 	│   ├── Dockerfile                      ✅
-	│   └── Program.cs                      ✅ (TASK-2.1)
+	│   └── Program.cs                      ✅ (Configures Swagger/OpenAPI)
 	│
-	└── FamilyTreeApp.Tests/                ✅ EXISTS (TASK-0.4)
-		├── FamilyTreeApp.Tests.csproj
-		└── Unit/
-			├── Api/
-			│   └── TreeAuthorizationHandlerTests.cs ✅ (TASK-2.1, TASK-2.2)
-			├── Domain/
-			│   ├── UserTests.cs            ✅ (TASK-0.5)
-			│   ├── TreeTests.cs            ✅ (TASK-0.5)
-			│   └── TreeRbacTests.cs        ✅ (TASK-0.5)
-			└── Application/
-				├── Behaviors/
-				│   ├── LoggingBehaviorTests.cs      ✅ (TASK-1.7)
-				│   └── TransactionBehaviorTests.cs  ✅ (TASK-1.7)
-				└── Trees/
-					└── CreateTreeCommandHandlerTests.cs  ✅ (TASK-0.5)
+	└── FamilyTreeApp.Tests/                ✅ EXISTS
 ```
 
 ---
 
-## 2. Project Dependency Graph
+## 3. Project Dependency Graph
 
 ```
 FamilyTreeApp.Domain
@@ -129,13 +125,13 @@ FamilyTreeApp.Tests  →  FamilyTreeApp.Domain
 
 ---
 
-## 3. Behavior Pipeline
+## 4. Behavior Pipeline
 
-### 3.1 Input Validation Strategy
+### 4.1 Input Validation Strategy
 
 **Input validation is handled through two complementary approaches:**
 
-1. **Domain Factory Validation**: Entity creation and modification via static factory methods (e.g., `User.Create(...)`, `Tree.Create(...)`) that return `Result<T>` with domain-specific errors.
+1. **Domain Factory Validation**: Entity creation and modification via static factory methods (e.g., `User.Create(...)`, `Tree.Create(...)`) with private constructors. These factories return `Result<T>` with domain-specific errors.
 
 2. **Inline Guard Clauses**: Command handlers perform explicit validation checks for simple invariants (null, empty strings, etc.) before calling domain logic.
 
@@ -156,9 +152,9 @@ if (result.IsFailure)
 }
 ```
 
-### 3.2 Structural Pattern
+### 4.2 Structural Pattern
 
-All behaviors follow the **identical structural contract**. This is non-negotiable — consistency enables contributors to understand the pipeline at a glance.
+All behaviors follow the **identical structural contract**.
 
 ```csharp
 // Namespace: FamilyTreeApp.Application.Common.Behaviors
@@ -180,7 +176,7 @@ public sealed class XyzBehavior<TRequest, TResponse>(
 }
 ```
 
-### 3.3 DI Registration Order and Execution Chain
+### 4.3 DI Registration Order and Execution Chain
 
 Scrutor `Decorate<>()` uses **LIFO** — last registered wraps outermost.
 
@@ -215,48 +211,10 @@ HTTP Request
 		Returns Result<TResponse>.
 ```
 
-### 3.4 LoggingBehavior Design Detail
-
-```csharp
-public sealed class LoggingBehavior<TRequest, TResponse>(
-	ICommandHandler<TRequest, TResponse> innerHandler,
-	ILogger<LoggingBehavior<TRequest, TResponse>> logger)
-	: ICommandHandler<TRequest, TResponse>
-	where TRequest : IRequest<TResponse>
-```
-
-| Concern | Decision |
-|---|---|
-| Timer | `System.Diagnostics.Stopwatch` — no external dependency |
-| Log level on success | `Information` |
-| Log level on failure | `Warning` |
-| Fields logged | `{CommandType}`, `{ElapsedMs}`, `{ErrorCode}` (failure only), `{ErrorDescription}` (failure only) |
-| PII policy | Request payload is **never** logged |
-| Exception handling | Exceptions propagate unchanged — not caught by this behavior |
-
-### 3.5 TransactionBehavior Design Detail
-
-```csharp
-public sealed class TransactionBehavior<TRequest, TResponse>(
-	ICommandHandler<TRequest, TResponse> innerHandler,
-	IApplicationDbContext dbContext)
-	: ICommandHandler<TRequest, TResponse>
-	where TRequest : IRequest<TResponse>
-```
-
-| Concern | Decision |
-|---|---|
-| Transaction detection | `typeof(TRequest).IsAssignableTo(typeof(ITransactionalCommand))` |
-| Non-transactional path | Direct pass-through, zero DB calls |
-| Transaction scope | `dbContext.Database.BeginTransactionAsync()` |
-| Commit condition | `result.IsSuccess == true` |
-| Rollback condition | `result.IsFailure == true` OR exception thrown |
-| Exception handling | Rollback then re-throw — behavior does not swallow exceptions |
-
-### 3.6 ITransactionalCommand Placement
+### 4.4 ITransactionalCommand Placement
 
 Placed in `FamilyTreeApp.Application.Common.Interfaces` — transaction management
-is an application-layer concern, not a domain concern. Commands opt-in explicitly:
+is an application-layer concern, not a domain concern. Commands opt-in explicitly.
 
 ```csharp
 public record CreateTreeCommand : IRequest<Guid>, ITransactionalCommand { ... }
@@ -264,187 +222,83 @@ public record CreateTreeCommand : IRequest<Guid>, ITransactionalCommand { ... }
 
 ---
 
-## 4. Notification Infrastructure
+## 5. Roster Architecture
 
-Interfaces only — concrete implementation deferred to Phase 6.
+The Roster module manages the members of a family tree.
 
-```csharp
-// FamilyTreeApp.Application.Common.Interfaces
-
-public interface INotificationPublisher
-{
-	Task PublishAsync<T>(T notification, CancellationToken cancellationToken = default)
-		where T : notnull;
-}
-
-public interface INotificationHandler<in T> where T : notnull
-{
-	Task HandleAsync(T notification, CancellationToken cancellationToken = default);
-}
-```
-
-**Phase 6 implementation plan:** Register a concrete `NotificationPublisher` that
-resolves all `INotificationHandler<T>` instances from DI and fan-outs via
-`Task.WhenAll`.
+- **FamilyMember Aggregate**: Manages `VisibilityStatus` via a state machine (`Hidden` -> `Pending` -> `Visible`). Transitions are controlled by tree admins.
+- **Anonymous Masking**: If a member's visibility is not `Visible` and the requester is not an admin, the profile data is masked as `ProfileInfo.CreateAnonymous()`.
+- **Read-Through Merge**: If a `FamilyMember` has a `ClaimedByUserId`, the associated `User.ProfileInfo` is merged over the member's profile data during queries, providing the most up-to-date information.
 
 ---
 
-## 5. Error Handling
+## 6. Error Handling
 
-### 5.1 Layer Responsibilities
+### 6.1 Layer Responsibilities
 
 | Layer | Mechanism | Rule |
 |---|---|---|
 | **Domain** | `Result<T>` / `Result` | Never throws for business rule violations |
 | **Application** | Returns `Result<T>` | Catches infra exceptions only if a meaningful domain error can be produced |
 | **Infrastructure** | May throw | EF Core, network, external API failures are exceptional |
-| **API** | `GlobalExceptionHandler` | Maps `Result.IsFailure` → 4xx; unhandled exceptions → 500 RFC 7807 Problem Details |
+| **API** | `ApiControllerBase` | Maps `ErrorType` to corresponding HTTP status codes |
 
-### 5.2 Error Type Taxonomy
+### 6.2 Error Type Taxonomy
 
 ```csharp
+public enum ErrorType { Failure, Validation, NotFound, Unauthorized, Conflict }
+
 // Domain/Common/Errors/Error.cs
-public record Error(string Code, string Description)
+public record Error(string Code, string Message, ErrorType Type)
 {
-	public static readonly Error None = new(string.Empty, string.Empty);
+	public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);
 }
 
 // Domain/Common/Errors/DomainErrors.cs
-public static class DomainErrors
-{
-	public static class UserErrors { ... }
-	public static class TreeErrors { ... }
-	public static class Visibility { ... }    // Phase 3
-	public static class Roster { ... }        // Phase 3
-}
+public static class DomainErrors { ... }
 ```
 
 ---
 
-## 6. Docker Compose Infrastructure
+## 7. Authentication Design
 
-`docker-compose.yml` hosts all local development dependencies.
-
-| Service | Image | Host Port | Purpose |
-|---|---|---|---|
-| `database` | `pgvector/pgvector:pg18` | `5433` | PostgreSQL with pgvector extension |
-| `backend` | Local Dockerfile | `8080` | ASP.NET Core API |
-| `redis` | `redis:7-alpine` | `6379` | Cache (active Phase 6; provisioned Phase 0) |
-
-Redis is provisioned in Phase 0 so that Phase 6 requires **zero** infrastructure
-changes. It is unused until `IDistributedCache` is pointed at Redis.
+**Current Implementation**: Google OAuth with ASP.NET Core Cookie Authentication.
+- `AddGoogleOpenIdConnect` handles the OAuth flow.
+- Session persisted as an encrypted cookie.
+- `AuthController` orchestrates user upsert via `ProcessExternalLoginCommandHandler`.
+- The `IAuthService` provides a thin wrapper for cookie sign-in via `SignInAsync`.
 
 ---
 
-## 7. CI/CD Pipeline
+## 8. Data Access
 
-```
-Trigger: push → main | pull_request → main
-
-Jobs:
-  build-and-test:
-	runs-on: ubuntu-latest
-	steps:
-	  1. actions/checkout@v4
-	  2. actions/setup-dotnet@v4          dotnet-version: '10.0.x'
-	  3. dotnet restore
-	  4. dotnet format --verify-no-changes --verbosity diagnostic
-	  5. dotnet build --no-restore --warnaserror
-	  6. dotnet test --no-build --verbosity normal
-```
-
-**Failure policy:** any step failure aborts the run. PRs cannot be merged
-while the pipeline is red.
+**Direct DbContext Pattern**: All data access is performed directly via `IApplicationDbContext` rather than using the Repository pattern. This provides full access to LINQ, reduces boilerplate, simplifies DTO projections, and is used consistently across Trees, Users, and Roster modules.
 
 ---
 
-## 8. Test Design
+## 9. API & Documentation
 
-### 8.1 Stack
-
-| Concern | Library |
-|---|---|
-| Test framework | xUnit |
-| Assertions | FluentAssertions |
-| Mocking | NSubstitute |
-| Discovery | `dotnet test` (xunit.runner.visualstudio) |
-
-### 8.2 Unit Test Conventions
-
-- **No database.** All unit tests use NSubstitute mocks or in-memory fakes.
-- **Naming:** `MethodName_StateUnderTest_ExpectedBehaviour`
-- **Arrangement:** AAA (Arrange / Act / Assert)
-- **No shared state** between tests; each test constructs its own sut.
-
-### 8.3 Test Coverage Targets (Phase 0)
-
-| File | Scenarios |
-|---|---|
-| `UserTests.cs` | `Create` valid → success; empty email → failure; null profile → failure |
-| `TreeTests.cs` | `Create` valid → success; empty name → failure; `UpdateDetails` empty name → failure |
-| `TreeRbacTests.cs` | `Create` valid role → success; Owner passes Owner/Admin/Member checks |
-| `CreateTreeCommandHandlerTests.cs` | Happy path → persists tree + returns Guid; duplicate name → failure |
-| `LoggingBehaviorTests.cs` | Success → logger called at Information; failure → logger called at Warning |
-| `TransactionBehaviorTests.cs` | Non-transactional → no transaction; success → commit; failure → rollback; throw → rollback + rethrow |
-
-### 8.4 Integration Tests
-
-Deferred to **Phase 8** (Testcontainers + `WebApplicationFactory`). Integration
-tests are not part of the Phase 0 CI run.
-
----
-
-## 9. Authentication Design
-
-### 9.1 Current Implementation (Confirmed)
-
-Google OAuth with ASP.NET Core Cookie Authentication:
-- `AddGoogleOpenIdConnect` handles the OAuth flow
-- Session persisted as an encrypted cookie (`ExpireTimeSpan = 14 days, SlidingExpiration = true`)
-- `AuthController` handles the callback, calls `ProcessExternalLoginCommand` to upsert the User
-
-### 9.2 User Upsert Flow
-
-```
-1. Browser → GET /auth/login → challenge Google
-2. Google → callback → AuthController.Callback
-3. AuthController extracts claims (sub, email, given_name, family_name, picture)
-4. ProcessExternalLoginCommand dispatched:
-   a. Look up ExternalLogin by (Provider="Google", SubjectId=sub)
-   b. If found → return existing UserId
-   c. If not found → create User + ExternalLogin, persist
-5. Sign-in cookie issued by ASP.NET Core
-6. Browser redirected to frontend
-```
-
-### 9.3 Phase 5 Hardening
-
-When Phase 5 begins, all `[AllowAnonymous]` endpoints introduced during development
-will be replaced with appropriate `[Authorize]` / RBAC policy attributes.
+- **Swagger/OpenAPI**: Configured in `Program.cs` with an OpenID Connect security definition. Swagger UI is available at `/swagger` during development.
+- **ApiControllerBase**: All controllers inherit from this base class, which provides helper methods for mapping `Result` to the appropriate `IActionResult` based on the `ErrorType`.
 
 ---
 
 ## 10. Decision Records
 
-### Decision — 2025-07 — Keep FluentValidation
-**Decision:** Retain `FluentValidation` via `ValidationPipelineBehavior` for input validation.
-**Context:** Implementation plan originally specified manual guard clauses only. Team evaluated the existing codebase.
-**Rationale:** FluentValidation is already integrated, auto-registered via Scrutor, and provides better test coverage for validators. Guard clauses remain in domain entities for invariant enforcement.
-**Impact:** `ValidationPipelineBehavior` is the outermost behavior; FluentValidation validators are registered per-command.
-**Review:** Revisit if validator count causes DI resolution overhead at scale.
+### Decision — 2026-08 — Direct DbContext over Repository Pattern
+**Decision:** Remove all usages of the Repository pattern in favor of direct `IApplicationDbContext` access.
+**Context:** The codebase contained a mix of patterns. Roster used repositories; Trees/Users used DbContext directly.
+**Rationale:** Direct DbContext usage reduces boilerplate interfaces/classes, simplifies complex query formulation (like those needed for Canvas Phase 4), allows direct DTO projection, and aligns with the existing approach in the Trees/Users modules.
+**Impact:** All repository interfaces and implementations have been removed.
 
----
+### Decision — 2026-08 — ErrorType HTTP Mapping
+**Decision:** `Error` records include an `ErrorType` enum that `ApiControllerBase` maps to HTTP status codes.
+**Context:** Previously, errors were mapped generic 400 Bad Request responses.
+**Rationale:** Type-safe mapping allows for standard HTTP semantics (e.g., 404 for NotFound, 409 for Conflict).
+**Impact:** Handlers set `ErrorType` appropriately, and the API layer automatically returns the correct status code.
 
-### Decision — 2025-07 — Cookie Auth over Custom JWT
-**Decision:** Use Google OAuth with ASP.NET Core cookie authentication; do not issue a custom JWT.
-**Context:** Plan originally specified API-issued JWT + refresh token rotation.
-**Rationale:** Cookie-based sessions are simpler, eliminate token storage concerns on the client, and rely on ASP.NET Core's battle-tested data protection stack.
-**Impact:** Frontend must be a same-domain SPA or rely on the cookie credential. Cross-domain scenarios require re-evaluation.
-**Review:** Reassess if a public API or mobile client is introduced.
-
----
-
-### Decision — 2025-07 — Behaviors Not Decorators (Naming)
-**Decision:** The pipeline pattern is called *behaviors*, not *decorators*.
-**Rationale:** Consistent with `ValidationPipelineBehavior` already in the codebase; reduces cognitive overhead when adding future cross-cutting concerns.
-**Impact:** All new pipeline classes live in `FamilyTreeApp.Application.Common.Behaviors`.
+### Decision — 2026-08 — ProfileInfo as C# Record
+**Decision:** `ProfileInfo` is implemented as a C# `record` with `init` properties.
+**Context:** Plan originally implied inheriting from a `ValueObject` base class.
+**Rationale:** C# records provide built-in structural equality, rendering a `ValueObject` base class redundant.
+**Impact:** Simplified implementation of value objects.

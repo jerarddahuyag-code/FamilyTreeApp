@@ -17,6 +17,7 @@
 | **CQRS pipeline** | Named *behaviors* following consistent pattern | Logging and Transaction behaviors; primary constructor, Scrutor-decorated |
 | **Handler injection** | Direct `[FromServices]` injection in controllers | No mediator/dispatcher; explicit dependencies |
 | **Error handling** | `Result<T>` for domain failures; exceptions for infra faults | Clear separation; global handler maps to RFC 7807 |
+| **Data Access** | Direct `IApplicationDbContext` | Simplifies query building and avoids repository boilerplate; uses EF Core features directly |
 | **Caching** | `IDistributedCache` abstraction; `MemoryDistributedCache` initially | Redis swap-in (Phase 6) requires no application-layer changes |
 | **Async processing** | Synchronous-first | Deferred to Phase 7 |
 | **pgvector** | `pgvector/pgvector:pg18` Docker image (extension pre-installed) | Enables Phase 7 vector search without re-provisioning |
@@ -65,7 +66,7 @@ and whether the result was a success or failure using structured logging (Serilo
 
 ### R-1.2 Logging Behavior — Failure Detail
 **WHEN** a command handler returns `Result.IsFailure`,
-**THE SYSTEM SHALL** log the `Error.Code` and `Error.Description` at `Warning` level
+**THE SYSTEM SHALL** log the `Error.Code` and `Error.Message` at `Warning` level
 without logging the request payload (to avoid PII leakage).
 
 ### R-1.3 Transaction Behavior — Conditional Wrapping
@@ -117,9 +118,13 @@ and enforce hierarchical access: `Owner > Admin > Member`.
 **THE SYSTEM SHALL** cache the result in `IDistributedCache` with a 5-minute TTL
 to reduce database round-trips on repeated requests.
 
+### R-SEC-2 Tree Access Modification
+**WHEN** tree access is modified,
+**THE SYSTEM SHALL** verify the requesting user has TreeOwner role.
+
 ---
 
-## Phase 3 — Roster (Pending)
+## Phase 3 — Roster (Complete)
 
 ### R-3.1 FamilyMember Creation
 **WHEN** an authorized tree admin creates a family member,
@@ -147,7 +152,7 @@ without mutating the entity state.
 the `FamilyMember.ProfileInfo` fields, using the User's value where non-null
 and falling back to the FamilyMember's value for any null User fields.
 
-### R-3.5 Anonymous Masking
+### R-3.5 Anonymous Masking ✅ Implemented
 **WHEN** a family member's `VisibilityStatus` is not `Visible` AND
 the requesting user is not an authorized tree admin,
 **THE SYSTEM SHALL** return an anonymised placeholder in place of
@@ -158,6 +163,28 @@ the member's personal data.
 **THE SYSTEM SHALL** verify both members belong to the same tree
 and return `Result.Failure(DomainErrors.FamilyMemberRelationshipErrors.MemberTreeMismatch)`
 if they do not.
+
+---
+
+## Additional Features (Users & Profiles)
+
+### R-USR-1 User CRUD Operations
+**WHEN** an authorized request is received,
+**THE SYSTEM SHALL** permit creating, reading, and deleting users.
+
+### R-USR-2 Profile Update
+**WHEN** an authenticated user requests a profile update,
+**THE SYSTEM SHALL** apply the new profile information to the user's record.
+
+### R-USR-3 Soft Delete
+**WHEN** a user or tree is deleted,
+**THE SYSTEM SHALL** perform a soft delete by marking the entity as deleted rather than removing it from the database.
+
+### R-USR-4 Gender Options
+**THE SYSTEM SHALL** support `Gender` values of `Male`, `Female`, `NonBinary`, and `PreferNotToSay`.
+
+### R-SEC-1 User Management Authentication
+**THE SYSTEM SHALL** require authentication for all user management endpoints.
 
 ---
 
@@ -181,7 +208,7 @@ if they do not.
 ### R-5.1 Authenticated-Only Endpoints
 **WHEN** Phase 5 begins, **THE SYSTEM SHALL** enforce `[Authorize]` on all
 endpoints that were previously `[AllowAnonymous]` during development,
-requiring a valid Google OAuth session cookie.
+requiring a valid ASP.NET Core session cookie populated via Google OAuth.
 
 ---
 
@@ -207,7 +234,6 @@ that fan-outs notifications to all registered `INotificationHandler<T>` instance
 
 | Scenario | Expected Behaviour |
 |---|---|
-| Command with no registered validator | `ValidationPipelineBehavior` passes through (no validators = no failure) |
 | `ITransactionalCommand` handler throws exception | `TransactionBehavior` rolls back transaction and re-throws |
 | `ITransactionalCommand` handler returns `Result.Failure` | `TransactionBehavior` rolls back; `LoggingBehavior` logs Warning |
 | Family member claimed by a deleted user | `ClaimedByUserId` FK is `SET NULL`; member falls back to its own `ProfileInfo` |

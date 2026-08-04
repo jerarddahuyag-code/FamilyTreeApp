@@ -51,7 +51,7 @@ public class FamilyMember : AggregateRoot
         return Result.Success(familyMember);
     }
 
-    public Result TransitionToVisbility(VisibilityStatus visibilityStatus)
+    public Result TransitionToVisibility(VisibilityStatus visibilityStatus)
     {
         if (CanTransitionToVisibility(visibilityStatus))
         {

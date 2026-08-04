@@ -27,7 +27,7 @@ public class RequestVisibilityCommandHandler(
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
         }
 
-        Result result = member.TransitionToVisbility(command.TargetVisibilityStatus);
+        Result result = member.TransitionToVisibility(command.TargetVisibilityStatus);
         if (result.IsFailure)
         {
             return Result.Failure<bool>(result.Error);
