@@ -1,10 +1,8 @@
 ﻿using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -22,7 +20,7 @@ public class ClaimFamilyMemberCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(ClaimFamilyMemberCommand command, CancellationToken cancellationToken = default)
     {
-        var member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId && m.TreeId == command.TreeId, cancellationToken);
+        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyMemberId == command.FamilyMemberId && m.TreeId == command.TreeId, cancellationToken);
         if (member is null)
         {
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);

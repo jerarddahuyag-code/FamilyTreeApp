@@ -2,7 +2,6 @@ using FamilyTreeApp.Application.Roster.CQRS.Commands;
 using FamilyTreeApp.Application.Roster.CQRS.Queries;
 using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

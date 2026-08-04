@@ -1,9 +1,10 @@
-﻿using FamilyTreeApp.Domain.Common;
+﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
-using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace FamilyTreeApp.Domain.Roster.Entities;
+namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
 public record UpdateFamilyMemberClaimedUserCommand : IRequest<bool>
 {
@@ -19,8 +20,8 @@ public class UpdateFamilyMemberClaimedUserCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(UpdateFamilyMemberClaimedUserCommand command, CancellationToken cancellationToken = default)
     {
-        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m => 
-            m.FamilyMemberId == command.FamilyMemberId 
+        FamilyMember? member = await dbContext.FamilyMembers.FirstOrDefaultAsync(m =>
+            m.FamilyMemberId == command.FamilyMemberId
             && m.TreeId == command.TreeId,
             cancellationToken);
         if (member is null)

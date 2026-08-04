@@ -28,7 +28,7 @@ public class UpdateFamilyMemberProfileCommandHandler(
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
         }
 
-        var result = member.UpdateProfile(command.ProfileInfo);
+        Result<FamilyMember> result = member.UpdateProfile(command.ProfileInfo);
 
         if (result.IsFailure)
         {
