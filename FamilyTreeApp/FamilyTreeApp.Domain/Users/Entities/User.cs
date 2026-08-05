@@ -1,6 +1,6 @@
 ﻿using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
-using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using System.Net.Mail;
 
 namespace FamilyTreeApp.Domain.Users.Entities;

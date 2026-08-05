@@ -1,12 +1,11 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Application.Roster.CQRS.Queries;
-using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Trees.Enums;
-using FamilyTreeApp.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
@@ -45,12 +44,12 @@ public class GetFamilyMembersQueryHandlerTests
 
         var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
 
-        Result<List<GetFamilyMembersResponse>> result = await _handler.HandleAsync(query, CancellationToken.None);
+        Result<GetFamilyMembersResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(1);
-        result.Value[0].ProfileInfo.FirstName.Should().Be("Anonymous");
-        result.Value[0].ProfileInfo.LastName.Should().BeNull();
+        result.Value.Items.Should().HaveCount(1);
+        result.Value.Items[0].ProfileInfo.FirstName.Should().Be("Anonymous");
+        result.Value.Items[0].ProfileInfo.LastName.Should().BeNull();
     }
 
     [Fact]
@@ -75,11 +74,11 @@ public class GetFamilyMembersQueryHandlerTests
 
         var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
 
-        Result<List<GetFamilyMembersResponse>> result = await _handler.HandleAsync(query, CancellationToken.None);
+        Result<GetFamilyMembersResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(1);
-        result.Value[0].ProfileInfo.FirstName.Should().Be("Secret");
-        result.Value[0].ProfileInfo.LastName.Should().Be("User");
+        result.Value.Items.Should().HaveCount(1);
+        result.Value.Items[0].ProfileInfo.FirstName.Should().Be("Secret");
+        result.Value.Items[0].ProfileInfo.LastName.Should().Be("User");
     }
 }

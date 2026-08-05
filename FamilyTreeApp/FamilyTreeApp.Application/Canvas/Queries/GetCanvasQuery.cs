@@ -3,7 +3,7 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Canvas.Entities;
 using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
-using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.EntityFrameworkCore;

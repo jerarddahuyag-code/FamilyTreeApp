@@ -1,6 +1,6 @@
 ﻿using FamilyTreeApp.Domain.Users.Enums;
 
-namespace FamilyTreeApp.Domain.Common.Errors.ValueObjects;
+namespace FamilyTreeApp.Domain.Common.ValueObjects;
 
 public record ProfileInfo
 {

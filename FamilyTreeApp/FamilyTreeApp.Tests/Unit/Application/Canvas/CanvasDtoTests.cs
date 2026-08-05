@@ -1,8 +1,8 @@
 using FamilyTreeApp.Application.Canvas.DTOs;
 using FamilyTreeApp.Domain.Canvas.Enums;
 using FamilyTreeApp.Domain.Canvas.ValueObjects;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Tests.Unit.Application.Canvas;
 

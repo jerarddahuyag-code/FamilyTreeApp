@@ -1,7 +1,7 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
-using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;

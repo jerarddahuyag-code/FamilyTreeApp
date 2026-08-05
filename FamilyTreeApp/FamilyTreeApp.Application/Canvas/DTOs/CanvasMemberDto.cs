@@ -1,4 +1,4 @@
-using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
+using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
 
 namespace FamilyTreeApp.Application.Canvas.DTOs;
