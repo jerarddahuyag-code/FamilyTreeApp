@@ -1,4 +1,5 @@
 using FamilyTreeApp.Application.Common.Behaviors;
+using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -10,6 +11,8 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         var assembly = Assembly.GetExecutingAssembly();
+
+        services.AddScoped<IVisibilityMediator, VisibilityMediator>();
 
         services.Scan(scan => scan
             .FromAssemblies(assembly)

@@ -14,6 +14,12 @@ public class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyMember>
         builder.Property(t => t.TreeId).HasColumnName("tree_id").IsRequired();
         builder.Property(t => t.ClaimedByUserId).HasColumnName("claimed_by_user_id");
 
+        builder.HasOne(t => t.ClaimedByUser)
+               .WithMany()
+               .HasForeignKey(t => t.ClaimedByUserId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.SetNull);
+
         builder.OwnsOne(u => u.ProfileInfo, p =>
         {
             p.Property(pi => pi.FirstName).HasColumnName("first_name").HasMaxLength(100);

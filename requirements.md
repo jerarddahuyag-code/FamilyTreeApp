@@ -2,7 +2,7 @@
 
 > **Status:** Living document. Updated at the end of each phase.
 > **Notation:** [EARS](https://alistairmavin.com/ears/) — Easy Approach to Requirements Syntax
-> **Last updated:** Phase 3 Roster complete
+> **Last updated:** Phase 4 Canvas decisions recorded
 
 ---
 
@@ -188,18 +188,58 @@ if they do not.
 
 ---
 
-## Phase 4 — Canvas (Pending)
+## Phase 4 — Canvas
 
 ### R-4.1 Three-Layer Canvas Model
 **THE SYSTEM SHALL** maintain a three-layer canvas model:
-- **Biological layer:** `FamilyMember` + `FamilyMemberRelationship`
-- **Visual layer:** `TreeNode` + `TreeNodeMember` (join) + `TreeEdge`
+- **Biological layer:** `FamilyMember` + `FamilyMemberRelationship` (managed via `RosterController`)
+- **Visual layer:** `TreeNode` + `TreeNodeMember` (join) + `TreeEdge` (managed via `CanvasController`)
 - Node types: `Single`, `Partner`, `MultiPerson`
 
-### R-4.2 Coordinate Updates
+### R-4.2 Strict Layer Segregation
+**THE SYSTEM SHALL** enforce strict segregation between the Biological and Visual layers:
+- Canvas CRUD commands (`AddTreeNode`, `AddTreeEdge`, etc.) MUST NOT create or mutate `FamilyMember` or `FamilyMemberRelationship` entities.
+- The frontend is responsible for orchestrating multi-step operations (e.g., first calling `RosterController` to create a `FamilyMember`, then calling `CanvasController` to place it on the canvas).
+
+### R-4.3 FamilyMember Placement on Canvas
+**WHEN** a `TreeNode` is created, **THE SYSTEM SHALL** accept a list of existing `FamilyMemberId`s as members of that node.
+- A `FamilyMember` MAY appear on more than one `TreeNode` within the same canvas (duplication is allowed for complex lineage layouts).
+- **THE SYSTEM SHALL** validate that all provided `FamilyMemberId`s belong to the same tree as the node being created.
+
+### R-4.4 Coordinate Updates — Bulk Atomic Save
 **WHEN** a tree owner or admin submits bulk coordinate updates for canvas nodes,
-**THE SYSTEM SHALL** persist all position changes atomically
+**THE SYSTEM SHALL** persist all position changes atomically using `ITransactionalCommand`
 (entire batch succeeds or entire batch is rolled back).
+
+### R-4.5 Canvas Layout — Manual Save
+**WHEN** a user edits the canvas layout (drags nodes), **THE SYSTEM SHALL** NOT auto-persist on every drag event.
+**WHEN** the user explicitly clicks "Save Layout", **THE SYSTEM SHALL** dispatch a bulk `UpdateCanvasCommand` to the backend.
+
+### R-4.6 Canvas Layout — Background Auto-Save
+**WHILE** a user has unsaved canvas layout changes, **THE SYSTEM SHALL** automatically dispatch a background save every 5 minutes.
+**WHEN** the background auto-save is triggered, **THE SYSTEM SHALL** display a brief "Saving..." toast notification to the user.
+
+### R-4.7 Canvas Data Fetching
+**WHEN** the frontend mounts the canvas view, **THE SYSTEM SHALL** fetch the full canvas payload from `GET /api/v1/trees/{treeId}/canvas` via TanStack Query.
+- Results SHALL be cached by TanStack Query on the frontend (stale-while-revalidate strategy).
+- **WHEN** any canvas mutation (add/remove node or edge) succeeds, **THE SYSTEM SHALL** invalidate the canvas query cache to trigger a refetch.
+- No server-side materialized views or backend caching shall be introduced in Phase 4 (deferred to Phase 6).
+
+### R-4.8 Canvas Visibility Masking
+**WHEN** the `GetCanvasQuery` is executed, **THE SYSTEM SHALL** pass all fetched nodes through the `VisibilityMediator` domain service.
+- Members with `VisibilityStatus != Visible` AND whose requesting user is not an authorized tree admin SHALL be masked as `{ "firstName": "Anonymous", "is_masked": true }` in the canvas payload.
+
+### R-4.9 Canvas API Endpoints
+**THE SYSTEM SHALL** expose the following REST endpoints under `CanvasController`:
+
+| Method | Route | Policy | Command/Query |
+|--------|-------|--------|---------------|
+| `GET` | `/api/v1/trees/{treeId}/canvas` | `TreeMember` | `GetCanvasQuery` |
+| `PUT` | `/api/v1/trees/{treeId}/canvas` | `TreeAdmin` | `UpdateCanvasCommand` (bulk coords) |
+| `POST` | `/api/v1/trees/{treeId}/canvas/nodes` | `TreeAdmin` | `AddTreeNodeCommand` |
+| `DELETE` | `/api/v1/trees/{treeId}/canvas/nodes/{nodeId}` | `TreeAdmin` | `RemoveTreeNodeCommand` |
+| `POST` | `/api/v1/trees/{treeId}/canvas/edges` | `TreeAdmin` | `AddTreeEdgeCommand` |
+| `DELETE` | `/api/v1/trees/{treeId}/canvas/edges/{edgeId}` | `TreeAdmin` | `RemoveTreeEdgeCommand` |
 
 ---
 
@@ -240,3 +280,6 @@ that fan-outs notifications to all registered `INotificationHandler<T>` instance
 | Visibility transition from `Visible` to `Pending` | Domain returns `Result.Failure(DomainErrors.FamilyMemberErrors.InvalidVisibilityTransition)` |
 | Relationship between members of different trees | Application returns `Result.Failure(DomainErrors.FamilyMemberRelationshipErrors.MemberTreeMismatch)` |
 | CI push with unformatted code | Pipeline fails at format-check step before build or tests run |
+| `AddTreeNodeCommand` with a `FamilyMemberId` from a different tree | Application returns `Result.Failure(DomainErrors.CanvasErrors.MemberNotInTree)` |
+| `AddTreeEdgeCommand` with source or target node from a different tree | Application returns `Result.Failure(DomainErrors.CanvasErrors.NodeNotInTree)` |
+| Canvas `UpdateCanvasCommand` partial failure mid-batch | `TransactionBehavior` rolls back entire batch; no coordinates are persisted |

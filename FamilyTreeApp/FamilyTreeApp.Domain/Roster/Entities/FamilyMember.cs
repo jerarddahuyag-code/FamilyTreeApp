@@ -1,6 +1,7 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Enums;
+using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Domain.Roster.Entities;
@@ -12,6 +13,8 @@ public class FamilyMember : AggregateRoot
     public Guid TreeId { get; private set; }
 
     public Guid? ClaimedByUserId { get; private set; }
+
+    public User? ClaimedByUser { get; private set; }
 
     public ProfileInfo ProfileInfo { get; private set; } = null!;
 

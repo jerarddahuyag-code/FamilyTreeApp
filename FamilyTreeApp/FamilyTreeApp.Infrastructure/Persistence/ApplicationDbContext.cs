@@ -1,4 +1,5 @@
 using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Domain.Canvas.Entities;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Users.Entities;
@@ -20,6 +21,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<FamilyMember> FamilyMembers { get; set; }
 
     public DbSet<FamilyMemberRelationship> FamilyMemberRelationships { get; set; }
+
+    public DbSet<TreeNode> TreeNodes { get; set; }
+
+    public DbSet<TreeEdge> TreeEdges { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

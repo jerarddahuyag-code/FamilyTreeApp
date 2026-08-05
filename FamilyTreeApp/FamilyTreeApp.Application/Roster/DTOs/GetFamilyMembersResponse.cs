@@ -3,7 +3,7 @@ using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Application.Roster.DTOs;
 
-public record FamilyMemberDto
+public record GetFamilyMembersResponse
 {
     public required Guid FamilyMemberId { get; init; }
     public required Guid TreeId { get; init; }

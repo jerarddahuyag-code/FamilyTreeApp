@@ -17,12 +17,12 @@ public class RosterController : ApiControllerBase
     [Authorize(Policy = "TreeMember")]
     public async Task<IActionResult> GetMembers(
         Guid treeId,
-        [FromServices] IQueryHandler<GetFamilyMembersQuery, List<FamilyMemberDto>> handler,
+        [FromServices] IQueryHandler<GetFamilyMembersQuery, List<GetFamilyMembersResponse>> handler,
         CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var userId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
 
-        Result<List<FamilyMemberDto>> result = await handler.HandleAsync(
+        Result<List<GetFamilyMembersResponse>> result = await handler.HandleAsync(
             new GetFamilyMembersQuery { TreeId = treeId, UserId = userId },
             cancellationToken);
 

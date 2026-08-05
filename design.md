@@ -1,7 +1,7 @@
 # FamilyTreeApp — Technical Design
 
 > **Status:** Living document. Updated at the end of each phase.
-> **Last updated:** Phase 3 Roster complete
+> **Last updated:** Phase 4 Canvas decisions recorded
 
 ---
 
@@ -53,7 +53,17 @@ FamilyTreeApp/                              ← Solution root
 	│   │   └── Enums/
 	│   │       ├── VisibilityStatus.cs     ✅
 	│   │       └── RelationshipType.cs     ✅
-	│   └── ValueObjects/ProfileInfo.cs     ✅ (Implemented as a C# record)
+	│   └── Canvas/
+	│       ├── Entities/
+	│       │   ├── TreeNode.cs             🔴 Phase 4
+	│       │   ├── TreeNodeMember.cs       🔴 Phase 4
+	│       │   └── TreeEdge.cs             🔴 Phase 4
+	│       ├── ValueObjects/
+	│       │   └── CanvasCoordinates.cs    🔴 Phase 4
+	│       ├── Enums/
+	│       │   └── NodeType.cs             🔴 Phase 4
+	│       └── Services/
+	│           └── VisibilityMediator.cs   🔴 Phase 4
 	│
 	├── FamilyTreeApp.Application/          ✅ EXISTS
 	│   ├── Common/
@@ -68,13 +78,21 @@ FamilyTreeApp/                              ← Solution root
 	│   ├── Users/CQRS/                             ✅ (Includes Users CRUD & Profile Update)
 	│   ├── Trees/CQRS/                             ✅
 	│   ├── Roster/CQRS/                            ✅
+	│   ├── Canvas/                                 🔴 Phase 4
+	│   │   ├── Queries/GetCanvas/                  🔴 Phase 4
+	│   │   ├── Commands/AddTreeNode/               🔴 Phase 4
+	│   │   ├── Commands/AddTreeEdge/               🔴 Phase 4
+	│   │   ├── Commands/RemoveTreeNode/            🔴 Phase 4
+	│   │   ├── Commands/RemoveTreeEdge/            🔴 Phase 4
+	│   │   ├── Commands/UpdateCanvas/              🔴 Phase 4
+	│   │   └── DTOs/                              🔴 Phase 4
 	│   └── DependencyInjection.cs                  ✅ (Scrutor decoration)
 	│
 	├── FamilyTreeApp.Infrastructure/       ✅ EXISTS
 	│   ├── Persistence/
 	│   │   ├── ApplicationDbContext.cs     ✅
 	│   │   ├── UnitOfWork.cs               ✅
-	│   │   ├── Model Configurations/       ✅
+	│   │   ├── Model Configurations/       ✅ (+ Canvas configs Phase 4)
 	│   │   └── Migrations/                 ✅
 	│   ├── Services/AuthService.cs         ✅
 	│   └── DependencyInjection.cs          ✅
@@ -92,7 +110,8 @@ FamilyTreeApp/                              ← Solution root
 	│   │   ├── TreesController.cs          ✅
 	│   │   ├── UsersController.cs          ✅
 	│   │   ├── ProfileController.cs        ✅
-	│   │   └── RosterController.cs         ✅
+	│   │   ├── RosterController.cs         ✅
+	│   │   └── CanvasController.cs         🔴 Phase 4
 	│   ├── Middleware/GlobalExceptionHandler.cs  ✅
 	│   ├── Dockerfile                      ✅
 	│   └── Program.cs                      ✅ (Configures Swagger/OpenAPI)
@@ -232,9 +251,91 @@ The Roster module manages the members of a family tree.
 
 ---
 
-## 6. Error Handling
+## 6. Canvas Architecture (Phase 4)
 
-### 6.1 Layer Responsibilities
+The Canvas module provides the visual mapping layer for a family tree. It is strictly decoupled from the Roster (Biological) layer.
+
+### 6.1 Three-Layer Model
+
+```
+Biological Layer (Roster)          Visual Layer (Canvas)
+─────────────────────────          ──────────────────────
+FamilyMember            ◄── via TreeNodeMember join ──► TreeNode
+FamilyMemberRelationship                               TreeEdge
+```
+
+- `TreeNode` represents a visual card on the canvas. `NodeType` = `Single | Partner | MultiPerson`.
+- `TreeNodeMember` is a join table linking `TreeNode` to one or more `FamilyMember`s. A `FamilyMember` MAY appear on multiple `TreeNode`s (duplication is permitted).
+- `TreeEdge` represents a visual connection between two `TreeNode`s.
+- Canvas CRUD commands **MUST NOT** create or mutate Roster entities. Layer segregation is enforced at the Application command level.
+
+### 6.2 CanvasDto Payload (Response Shape)
+
+```json
+{
+  "value": {
+    "nodes": [
+      {
+        "id": "uuid",
+        "type": "Single",
+        "position": { "x": 150.0, "y": 250.0 },
+        "isMasked": false,
+        "members": [
+          {
+            "id": "uuid",
+            "profileInfo": { "firstName": "John", "lastName": "Doe" },
+            "visibilityStatus": "Visible"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      { "id": "uuid", "sourceNodeId": "uuid", "targetNodeId": "uuid" }
+    ]
+  },
+  "isSuccess": true
+}
+```
+
+> Note: If `isMasked` is `true`, the member's `profileInfo` will only contain `{ "firstName": "Anonymous" }`.
+
+### 6.3 VisibilityMediator Domain Service
+
+- Input: list of `TreeNode` entities (with loaded `TreeNodeMember → FamilyMember → User` chain) + requesting user's authorization context.
+- Precomputes per-member masking: if `VisibilityStatus != Visible` AND the requester lacks `TreeAdmin` role → mark as masked.
+- Returns a decorated list of nodes with visibility applied.
+
+### 6.4 Data Fetching & Caching Strategy
+
+| Concern | Approach |
+|---------|----------|
+| Backend query | `GetCanvasQueryHandler` runs fresh DB query per request |
+| Server-side caching | None in Phase 4; deferred to Phase 6 (Redis) |
+| Frontend caching | TanStack Query (stale-while-revalidate) |
+| Cache invalidation | TanStack Query cache invalidated after any canvas mutation |
+
+### 6.5 Canvas Editing & Save Strategy
+
+| Trigger | Behavior |
+|---------|----------|
+| Node drag | React Flow updates local state only (no API call) |
+| "Save Layout" button | Dispatches `PUT /api/v1/trees/{treeId}/canvas` with bulk `(NodeId, X, Y)` payload |
+| 5-minute auto-save | Background timer fires if canvas has unsaved changes; shows "Saving..." toast |
+| Mutation success | TanStack Query invalidates `canvas:{treeId}` query key |
+
+### 6.6 DB Table Conventions
+
+| Entity | Table | Key Notes |
+|--------|-------|-----------|
+| `TreeNode` | `canvas_treenode` | Index on `(TreeId)`. `CanvasCoordinates` via `OwnsOne()`. |
+| `TreeNodeMember` | `canvas_treenode_member` | Composite PK `(TreeNodeId, FamilyMemberId)`. No uniqueness constraint on `FamilyMemberId` alone. |
+| `TreeEdge` | `canvas_treeedge` | Index on `(TreeId)`. FKs to `canvas_treenode` (cascade). |
+
+---
+
+## 7. Error Handling
+
+### 7.1 Layer Responsibilities
 
 | Layer | Mechanism | Rule |
 |---|---|---|
@@ -243,7 +344,7 @@ The Roster module manages the members of a family tree.
 | **Infrastructure** | May throw | EF Core, network, external API failures are exceptional |
 | **API** | `ApiControllerBase` | Maps `ErrorType` to corresponding HTTP status codes |
 
-### 6.2 Error Type Taxonomy
+### 7.2 Error Type Taxonomy
 
 ```csharp
 public enum ErrorType { Failure, Validation, NotFound, Unauthorized, Conflict }
@@ -260,7 +361,7 @@ public static class DomainErrors { ... }
 
 ---
 
-## 7. Authentication Design
+## 8. Authentication Design
 
 **Current Implementation**: Google OAuth with ASP.NET Core Cookie Authentication.
 - `AddGoogleOpenIdConnect` handles the OAuth flow.
@@ -270,20 +371,20 @@ public static class DomainErrors { ... }
 
 ---
 
-## 8. Data Access
+## 9. Data Access
 
 **Direct DbContext Pattern**: All data access is performed directly via `IApplicationDbContext` rather than using the Repository pattern. This provides full access to LINQ, reduces boilerplate, simplifies DTO projections, and is used consistently across Trees, Users, and Roster modules.
 
 ---
 
-## 9. API & Documentation
+## 10. API & Documentation
 
 - **Swagger/OpenAPI**: Configured in `Program.cs` with an OpenID Connect security definition. Swagger UI is available at `/swagger` during development.
 - **ApiControllerBase**: All controllers inherit from this base class, which provides helper methods for mapping `Result` to the appropriate `IActionResult` based on the `ErrorType`.
 
 ---
 
-## 10. Decision Records
+## 11. Decision Records
 
 ### Decision — 2026-08 — Direct DbContext over Repository Pattern
 **Decision:** Remove all usages of the Repository pattern in favor of direct `IApplicationDbContext` access.
@@ -302,3 +403,24 @@ public static class DomainErrors { ... }
 **Context:** Plan originally implied inheriting from a `ValueObject` base class.
 **Rationale:** C# records provide built-in structural equality, rendering a `ValueObject` base class redundant.
 **Impact:** Simplified implementation of value objects.
+
+### Decision — 2026-08 (Phase 4) — Canvas Caching: On-the-fly Querying + Frontend TanStack Query
+**Decision:** No server-side materialized views or Redis caching for the Canvas in Phase 4. The `GetCanvasQuery` runs fresh against the DB on each request. The frontend uses TanStack Query for caching and invalidation.
+**Context:** The `VisibilityMediator` applies per-requester masking (Owner sees all, Public sees "Anonymous"), making the response inherently user-role-specific. This makes a single shared server-side cache infeasible without complex role-partitioning.
+**Rationale:** On-the-fly querying is simpler to implement, correct by default, and sufficient for Phase 4 scale. Server-side Redis caching (partitioned by role) is deferred to Phase 6 where it already belongs in the plan.
+**Impact:** `GetCanvasQueryHandler` runs a DB query on each request. Acceptable for Phase 4 tree sizes.
+**Review:** Revisit when Phase 6 Redis caching is implemented.
+
+### Decision — 2026-08 (Phase 4) — Canvas Editing: Manual Save + 5-Minute Auto-Save
+**Decision:** Canvas coordinate changes are NOT persisted on drag. The user must click "Save Layout" explicitly. A background auto-save fires every 5 minutes if there are unsaved changes, showing a "Saving..." toast.
+**Context:** React Flow updates coordinates dozens of times per second during drag. Persisting every event would hammer the backend.
+**Rationale:** Manual save prevents accidental layout changes and keeps the backend load predictable. The 5-minute auto-save prevents data loss without requiring continuous user action.
+**Impact:** The frontend must track "dirty" state on the canvas and provide a Save button. `UpdateCanvasCommand` accepts a bulk list of `(NodeId, X, Y)` tuples.
+**Review:** Consider debounced autosave instead of interval-based if user feedback indicates 5 minutes is too long.
+
+### Decision — 2026-08 (Phase 4) — FamilyMember Duplication on Canvas Allowed
+**Decision:** A single `FamilyMember` may appear on more than one `TreeNode` (no uniqueness constraint on `TreeNodeMember.FamilyMemberId`).
+**Context:** Complex family lineages (e.g., half-siblings, adoptions, multiple marriages) may require placing the same biological person visually in multiple node contexts.
+**Rationale:** Strict 1:1 node-to-member mapping would artificially constrain valid genealogical representations.
+**Impact:** No unique index on `(FamilyMemberId)` in `canvas_treenode_member`. Validation checks only that the member belongs to the correct tree.
+**Review:** If data integrity issues arise, consider a soft uniqueness guard (application-level warning, not hard constraint).

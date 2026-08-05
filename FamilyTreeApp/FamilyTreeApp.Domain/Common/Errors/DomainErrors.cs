@@ -42,4 +42,13 @@ public static class DomainErrors
         public readonly static Error MemberTreeMismatch = new("FamilyMemberRelationship.MemberTreeMismatch", "Both family members must belong to the same tree.", ErrorType.Validation);
         public readonly static Error RelationshipNotFound = new("FamilyMemberRelationship.NotFound", "The relationship was not found.", ErrorType.NotFound);
     }
+
+    public static class CanvasErrors
+    {
+        public readonly static Error MemberNotInTree = new("Canvas.MemberNotInTree", "The member's TreeId does not match the target canvas node's TreeId.", ErrorType.Validation);
+        public readonly static Error NodeNotInTree = new("Canvas.NodeNotInTree", "The source or target node's TreeId does not match.", ErrorType.Validation);
+        public readonly static Error NodeNotFound = new("Canvas.NodeNotFound", "The canvas node was not found.", ErrorType.NotFound);
+        public readonly static Error EdgeNotFound = new("Canvas.EdgeNotFound", "The canvas edge was not found.", ErrorType.NotFound);
+    }
 }
+

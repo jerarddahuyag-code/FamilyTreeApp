@@ -1,3 +1,4 @@
+using FamilyTreeApp.Domain.Canvas.Entities;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Trees.Entities;
 using FamilyTreeApp.Domain.Users.Entities;
@@ -19,6 +20,10 @@ public interface IApplicationDbContext
     DbSet<FamilyMember> FamilyMembers { get; }
 
     DbSet<FamilyMemberRelationship> FamilyMemberRelationships { get; }
+
+    DbSet<TreeNode> TreeNodes { get; }
+
+    DbSet<TreeEdge> TreeEdges { get; }
 
     DatabaseFacade Database { get; }
 

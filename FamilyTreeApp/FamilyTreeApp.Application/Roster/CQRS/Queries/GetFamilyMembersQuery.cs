@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Queries;
 
-public record GetFamilyMembersQuery : IRequest<List<FamilyMemberDto>>
+public record GetFamilyMembersQuery : IRequest<List<GetFamilyMembersResponse>>
 {
     public required Guid TreeId { get; init; }
     public required Guid UserId { get; init; }
@@ -18,9 +18,9 @@ public record GetFamilyMembersQuery : IRequest<List<FamilyMemberDto>>
 
 public class GetFamilyMembersQueryHandler(
     IApplicationDbContext dbContext)
-    : IQueryHandler<GetFamilyMembersQuery, List<FamilyMemberDto>>
+    : IQueryHandler<GetFamilyMembersQuery, List<GetFamilyMembersResponse>>
 {
-    public async Task<Result<List<FamilyMemberDto>>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<List<GetFamilyMembersResponse>>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
     {
         var isAdmin = await dbContext.TreeRbacs
             .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == TreeRole.Admin || r.TreeRole == TreeRole.Owner), cancellationToken);
@@ -42,7 +42,7 @@ public class GetFamilyMembersQueryHandler(
                 .ToDictionaryAsync(u => u.UserId, cancellationToken);
         }
 
-        List<FamilyMemberDto> dtos = [];
+        List<GetFamilyMembersResponse> dtos = [];
 
         foreach (FamilyMember member in members)
         {
@@ -60,7 +60,7 @@ public class GetFamilyMembersQueryHandler(
                 profile = ProfileInfo.CreateAnonymous();
             }
 
-            dtos.Add(new FamilyMemberDto
+            dtos.Add(new GetFamilyMembersResponse
             {
                 FamilyMemberId = member.FamilyMemberId,
                 TreeId = member.TreeId,

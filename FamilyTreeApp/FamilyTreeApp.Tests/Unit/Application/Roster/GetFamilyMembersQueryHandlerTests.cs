@@ -45,7 +45,7 @@ public class GetFamilyMembersQueryHandlerTests
 
         var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
 
-        Result<List<FamilyMemberDto>> result = await _handler.HandleAsync(query, CancellationToken.None);
+        Result<List<GetFamilyMembersResponse>> result = await _handler.HandleAsync(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -75,7 +75,7 @@ public class GetFamilyMembersQueryHandlerTests
 
         var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
 
-        Result<List<FamilyMemberDto>> result = await _handler.HandleAsync(query, CancellationToken.None);
+        Result<List<GetFamilyMembersResponse>> result = await _handler.HandleAsync(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);

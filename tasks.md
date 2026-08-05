@@ -1,7 +1,7 @@
 # FamilyTreeApp — Implementation Tasks
 
 > **Legend:** 🔴 Not started | 🟡 In progress | 🟢 Complete | ⏭ Deferred
-> **Last updated:** Phase 3 Roster complete, preparing for Phase 4
+> **Last updated:** Phase 4 Canvas tasks defined
 
 ---
 
@@ -101,18 +101,168 @@
 
 ---
 
-## Future Phases
+## Phase 4 — Canvas
 
-### Phase 4 — Canvas
-🔴 Three-Layer Canvas Model implementation
-🔴 Bulk Coordinate Updates implementation
+> **Goal:** Build the `TreeNode`, `TreeNodeMember`, and `TreeEdge` entities, the `VisibilityMediator` domain service, and all canvas CRUD endpoints. Implement the frontend canvas fetch/cache/edit flow.
 
-### Phase 5 — Authentication Hardening
+### Domain Layer
+
+#### TASK-4.1 — Domain: `TreeNode` entity 🔴
+**What:** Create `FamilyTreeApp.Domain/Canvas/Entities/TreeNode.cs`.
+- Properties: `Guid Id`, `Guid TreeId`, `NodeType NodeType`, `CanvasCoordinates Coordinates`, `DateTime CreatedAt`, `DateTime UpdatedAt`.
+- Navigation: `ICollection<TreeNodeMember> Members`.
+- Domain method: `Result UpdateCoordinates(double x, double y)`.
+
+#### TASK-4.2 — Domain: `TreeNodeMember` join entity 🔴
+**What:** Create `FamilyTreeApp.Domain/Canvas/Entities/TreeNodeMember.cs`.
+- Composite PK: `(TreeNodeId, FamilyMemberId)`.
+- No uniqueness constraint on `FamilyMemberId` alone — a member may appear on multiple nodes.
+
+#### TASK-4.3 — Domain: `TreeEdge` entity 🔴
+**What:** Create `FamilyTreeApp.Domain/Canvas/Entities/TreeEdge.cs`.
+- Properties: `Guid Id`, `Guid TreeId`, `Guid SourceNodeId`, `Guid TargetNodeId`, `DateTime CreatedAt`, `DateTime UpdatedAt`.
+
+#### TASK-4.4 — Domain: `CanvasCoordinates` value object 🟢
+**What:** Create `FamilyTreeApp.Domain/Canvas/ValueObjects/CanvasCoordinates.cs`.
+- C# `record` with `double X`, `double Y`.
+
+#### TASK-4.5 — Domain: `NodeType` enum 🟢
+**What:** Create `FamilyTreeApp.Domain/Canvas/Enums/NodeType.cs`.
+- Enum: `Single`, `Partner`, `MultiPerson`.
+
+#### TASK-4.6 — Domain: `DomainErrors` — Canvas entries 🔴
+**What:** Add `CanvasErrors` nested class to `DomainErrors.cs`.
+- `MemberNotInTree` — member's TreeId does not match the target canvas node's TreeId.
+- `NodeNotInTree` — source or target node's TreeId does not match.
+- `NodeNotFound`, `EdgeNotFound`.
+
+#### TASK-4.7 — Domain: `VisibilityMediator` domain service 🔴
+**What:** Create `FamilyTreeApp.Domain/Canvas/Services/VisibilityMediator.cs`.
+- Input: `IEnumerable<TreeNode>` (with loaded members + family members + users) + requesting user role.
+- Logic: For each member — if `VisibilityStatus != Visible` AND requester is not `TreeAdmin` → mask as `{ "firstName": "Anonymous", isMasked: true }`.
+- Returns a flat visibility map consumed by `GetCanvasQueryHandler`.
+
+---
+
+### Application Layer
+
+#### TASK-4.8 — Application: `GetCanvasQuery` + handler 🟢
+**What:** Create `FamilyTreeApp.Application/Canvas/Queries/GetCanvas/`.
+- Query: `Guid TreeId`, `Guid RequestingUserId`.
+- Handler: fetches all `TreeNode` entities with `.Include(n => n.Members).ThenInclude(m => m.FamilyMember).ThenInclude(f => f.ClaimedByUser)` + all `TreeEdge` entities for the tree.
+- Passes nodes through `VisibilityMediator`.
+- Projects into `CanvasDto` (`nodes[]` + `edges[]`).
+
+#### TASK-4.9 — Application: `AddTreeNodeCommand` + handler 🔴
+**What:** Create `FamilyTreeApp.Application/Canvas/Commands/AddTreeNode/`.
+- Command: `Guid TreeId`, `NodeType NodeType`, `double X`, `double Y`, `IReadOnlyList<Guid> FamilyMemberIds`.
+- Validation: all `FamilyMemberIds` must belong to the same `TreeId`. Returns `Result.Failure(DomainErrors.CanvasErrors.MemberNotInTree)` on failure.
+- Creates `TreeNode` + `TreeNodeMember` links. Implements `ITransactionalCommand`.
+
+#### TASK-4.10 — Application: `RemoveTreeNodeCommand` + handler 🔴
+**What:** Create `FamilyTreeApp.Application/Canvas/Commands/RemoveTreeNode/`.
+- Validates node exists and belongs to the tree. Cascade deletes `TreeNodeMember` links.
+- Returns `Result.Failure(DomainErrors.CanvasErrors.NodeNotFound)` if not found.
+
+#### TASK-4.11 — Application: `AddTreeEdgeCommand` + handler 🔴
+**What:** Create `FamilyTreeApp.Application/Canvas/Commands/AddTreeEdge/`.
+- Command: `Guid TreeId`, `Guid SourceNodeId`, `Guid TargetNodeId`.
+- Validation: both nodes must exist and belong to the same tree. Returns `Result.Failure(DomainErrors.CanvasErrors.NodeNotInTree)` on mismatch.
+
+#### TASK-4.12 — Application: `RemoveTreeEdgeCommand` + handler 🟢
+**What:** Create `FamilyTreeApp.Application/Canvas/Commands/RemoveTreeEdge/`.
+- Returns `Result.Failure(DomainErrors.CanvasErrors.EdgeNotFound)` if not found.
+
+#### TASK-4.13 — Application: `UpdateCanvasCommand` + handler 🔴
+**What:** Create `FamilyTreeApp.Application/Canvas/Commands/UpdateCanvas/`.
+- Command: `Guid TreeId`, `IReadOnlyList<NodePositionUpdate> Updates` where `NodePositionUpdate` is `(Guid NodeId, double X, double Y)`.
+- Implements `ITransactionalCommand` — entire batch is atomic.
+- Handler loops nodes, calls `UpdateCoordinates()`, and persists.
+
+#### TASK-4.14 — Application: Canvas DTOs 🔴
+**What:** Create `FamilyTreeApp.Application/Canvas/DTOs/`.
+- `CanvasDto` — `List<TreeNodeDto> Nodes`, `List<TreeEdgeDto> Edges`.
+- `TreeNodeDto` — `Guid Id`, `NodeType Type`, `CanvasCoordinates Position`, `List<CanvasMemberDto> Members`.
+- `CanvasMemberDto` — `Guid Id`, `ProfileInfo ProfileInfo`, `bool IsMasked`, `VisibilityStatus VisibilityStatus`.
+- `TreeEdgeDto` — `Guid Id`, `Guid SourceNodeId`, `Guid TargetNodeId`.
+
+---
+
+### Infrastructure Layer
+
+#### TASK-4.15 — Infrastructure: EF Core configurations 🟢
+**What:**
+- `TreeNodeConfiguration.cs` — table `canvas_treenode`, `CanvasCoordinates` via `OwnsOne()`, index on `(TreeId)`, FK to `trees_tree` (cascade).
+- `TreeNodeMemberConfiguration.cs` — table `canvas_treenode_member`, composite PK `(TreeNodeId, FamilyMemberId)`, FK to `canvas_treenode` (cascade), FK to `roster_family_members` (cascade). **No unique index on `FamilyMemberId` alone.**
+- `TreeEdgeConfiguration.cs` — table `canvas_treeedge`, index on `(TreeId)`, FK to `canvas_treenode` for source + target (cascade).
+
+#### TASK-4.16 — Infrastructure: Add Canvas DbSets to `IApplicationDbContext` 🟢
+**What:** Add `DbSet<TreeNode>`, `DbSet<TreeEdge>` to `IApplicationDbContext` and `ApplicationDbContext`.
+(`TreeNodeMember` accessed via navigation, not direct DbSet.)
+
+#### TASK-4.17 — Infrastructure: EF Core migration `AddCanvas` 🟢
+**What:** `dotnet ef migrations add AddCanvas --project FamilyTreeApp.Infrastructure --startup-project FamilyTreeApp.Api`
+
+---
+
+### API Layer
+
+#### TASK-4.18 — API: `CanvasController` 🟢
+**What:** Create `FamilyTreeApp.Api/Controllers/CanvasController.cs`.
+- `GET /api/v1/trees/{treeId}/canvas` → `[Authorize(Policy = "TreeMember")]` → `GetCanvasQuery`
+- `PUT /api/v1/trees/{treeId}/canvas` → `[Authorize(Policy = "TreeAdmin")]` → `UpdateCanvasCommand`
+- `POST /api/v1/trees/{treeId}/canvas/nodes` → `[Authorize(Policy = "TreeAdmin")]` → `AddTreeNodeCommand`
+- `DELETE /api/v1/trees/{treeId}/canvas/nodes/{nodeId}` → `[Authorize(Policy = "TreeAdmin")]` → `RemoveTreeNodeCommand`
+- `POST /api/v1/trees/{treeId}/canvas/edges` → `[Authorize(Policy = "TreeAdmin")]` → `AddTreeEdgeCommand`
+- `DELETE /api/v1/trees/{treeId}/canvas/edges/{edgeId}` → `[Authorize(Policy = "TreeAdmin")]` → `RemoveTreeEdgeCommand`
+
+---
+
+### Tests
+
+#### TASK-4.19 — Tests: `VisibilityMediatorTests` 🔴
+**What:** Unit tests for `VisibilityMediator`.
+- `MaskMember_WhenVisibilityHiddenAndRequesterIsNotAdmin_ReturnsMasked()`
+- `MaskMember_WhenVisibilityVisibleAndRequesterIsPublic_ReturnsUnmasked()`
+- `MaskMember_WhenUserIsAdminAndMemberIsHidden_ReturnsUnmasked()`
+
+#### TASK-4.20 — Tests: `AddTreeNodeCommandHandlerTests` 🔴
+**What:** Unit tests for `AddTreeNodeCommandHandler`.
+- `Handle_WhenFamilyMemberBelongsToDifferentTree_ReturnsFailure()`
+- `Handle_WhenValidMembersProvided_CreatesNodeAndLinks()`
+- `Handle_WhenSameMemberAppearsInMultipleNodes_Succeeds()` (duplication allowed)
+
+#### TASK-4.21 — Tests: `UpdateCanvasCommandHandlerTests` 🔴
+**What:** Unit tests for bulk coordinate update.
+- `Handle_WhenNodeNotFound_ReturnsFailure()`
+- `Handle_WhenAllNodesFound_UpdatesCoordinatesAtomically()`
+
+#### TASK-4.22 — Tests: `GetCanvasQueryHandlerTests` 🟢
+**What:** Unit tests for canvas fetch + visibility masking integration.
+- Verify masked nodes return anonymized member data.
+- Verify admin requesters see unmasked data.
+
+---
+
+### Test Gate
+
+```bash
+dotnet ef migrations add AddCanvas --project FamilyTreeApp.Infrastructure --startup-project FamilyTreeApp.Api
+dotnet ef database update --project FamilyTreeApp.Infrastructure --startup-project FamilyTreeApp.Api
+dotnet build --warnaserror
+dotnet test
+```
+
+---
+
+## Phase 5 — Authentication Hardening
 🔴 Enforce `[Authorize]` on all development endpoints
 
 ### Phase 6 — API Hardening
 🔴 Apply rate limiting
 🔴 Replace `MemoryDistributedCache` with Redis
+🔴 Implement `INotificationPublisher` concrete implementation
+🔴 Add server-side Redis canvas cache (partitioned by `TreeRole`)
 
 ### Phase 7 & 8 — Advanced Features
 🔴 Async Processing & Vector Search (pgvector)
