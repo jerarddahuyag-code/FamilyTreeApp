@@ -1,6 +1,5 @@
 using FamilyTreeApp.Application.Roster.CQRS.Commands;
 using FamilyTreeApp.Application.Roster.CQRS.Queries;
-using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +16,12 @@ public class RosterController : ApiControllerBase
     [Authorize(Policy = "TreeMember")]
     public async Task<IActionResult> GetMembers(
         Guid treeId,
-        [FromServices] IQueryHandler<GetFamilyMembersQuery, List<GetFamilyMembersResponse>> handler,
+        [FromServices] IQueryHandler<GetFamilyMembersQuery, GetFamilyMembersResponse> handler,
         CancellationToken cancellationToken)
     {
         var userId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
 
-        Result<List<GetFamilyMembersResponse>> result = await handler.HandleAsync(
+        Result<GetFamilyMembersResponse> result = await handler.HandleAsync(
             new GetFamilyMembersQuery { TreeId = treeId, UserId = userId },
             cancellationToken);
 
@@ -178,10 +177,10 @@ public class RosterController : ApiControllerBase
     public async Task<IActionResult> GetRelationships(
         Guid treeId,
         Guid memberId,
-        [FromServices] IQueryHandler<GetRelationshipsQuery, List<RelationshipDto>> handler,
+        [FromServices] IQueryHandler<GetRelationshipsQuery, GetRelationshipQueryResponse> handler,
         CancellationToken cancellationToken)
     {
-        Result<List<RelationshipDto>> result = await handler.HandleAsync(
+        Result<GetRelationshipQueryResponse> result = await handler.HandleAsync(
             new GetRelationshipsQuery { TreeId = treeId, MemberId = memberId },
             cancellationToken);
 

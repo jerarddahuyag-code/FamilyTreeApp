@@ -1,26 +1,41 @@
 using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Application.Roster.DTOs;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Entities;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Enums;
 using FamilyTreeApp.Domain.Users.Entities;
-using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Queries;
 
-public record GetFamilyMembersQuery : IRequest<List<GetFamilyMembersResponse>>
+public record GetFamilyMembersQuery : IRequest<GetFamilyMembersResponse>
 {
     public required Guid TreeId { get; init; }
     public required Guid UserId { get; init; }
 }
 
+public record GetFamilyMembersResponse
+{
+    public required List<GetFamilyMembersResponseItem> Items { get; init; }
+}
+
+public record GetFamilyMembersResponseItem
+{
+    public required Guid FamilyMemberId { get; init; }
+    public required Guid TreeId { get; init; }
+    public Guid? ClaimedByUserId { get; init; }
+    public required ProfileInfo ProfileInfo { get; init; }
+    public required VisibilityStatus VisibilityStatus { get; init; }
+    public required DateTime CreatedAt { get; init; }
+    public required DateTime UpdatedAt { get; init; }
+}
+
 public class GetFamilyMembersQueryHandler(
     IApplicationDbContext dbContext)
-    : IQueryHandler<GetFamilyMembersQuery, List<GetFamilyMembersResponse>>
+    : IQueryHandler<GetFamilyMembersQuery, GetFamilyMembersResponse>
 {
-    public async Task<Result<List<GetFamilyMembersResponse>>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetFamilyMembersResponse>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
     {
         var isAdmin = await dbContext.TreeRbacs
             .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == TreeRole.Admin || r.TreeRole == TreeRole.Owner), cancellationToken);
@@ -42,7 +57,7 @@ public class GetFamilyMembersQueryHandler(
                 .ToDictionaryAsync(u => u.UserId, cancellationToken);
         }
 
-        List<GetFamilyMembersResponse> dtos = [];
+        List<GetFamilyMembersResponseItem> dtos = [];
 
         foreach (FamilyMember member in members)
         {
@@ -60,7 +75,7 @@ public class GetFamilyMembersQueryHandler(
                 profile = ProfileInfo.CreateAnonymous();
             }
 
-            dtos.Add(new GetFamilyMembersResponse
+            dtos.Add(new GetFamilyMembersResponseItem
             {
                 FamilyMemberId = member.FamilyMemberId,
                 TreeId = member.TreeId,
@@ -72,7 +87,7 @@ public class GetFamilyMembersQueryHandler(
             });
         }
 
-        return Result.Success(dtos);
+        return Result.Success(new GetFamilyMembersResponse { Items = dtos });
     }
 
     private static ProfileInfo MergeProfile(ProfileInfo userProfile, ProfileInfo memberProfile)

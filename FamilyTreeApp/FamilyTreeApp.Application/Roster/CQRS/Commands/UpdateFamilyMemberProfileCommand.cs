@@ -1,8 +1,8 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Entities;
-using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;

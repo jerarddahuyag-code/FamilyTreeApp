@@ -3,9 +3,9 @@ using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Canvas.Entities;
 using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Enums;
-using FamilyTreeApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Canvas.Queries;

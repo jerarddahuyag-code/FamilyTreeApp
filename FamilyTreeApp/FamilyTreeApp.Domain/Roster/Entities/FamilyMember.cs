@@ -1,8 +1,8 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Users.Entities;
-using FamilyTreeApp.Domain.ValueObjects;
 
 namespace FamilyTreeApp.Domain.Roster.Entities;
 

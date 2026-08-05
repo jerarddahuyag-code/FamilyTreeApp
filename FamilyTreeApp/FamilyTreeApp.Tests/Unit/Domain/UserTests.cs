@@ -1,7 +1,7 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
+using FamilyTreeApp.Domain.Common.Errors.ValueObjects;
 using FamilyTreeApp.Domain.Users.Entities;
-using FamilyTreeApp.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace FamilyTreeApp.Tests.Unit.Domain;
