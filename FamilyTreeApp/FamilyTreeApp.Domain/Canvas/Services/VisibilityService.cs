@@ -12,19 +12,16 @@ public record CanvasMemberVisibility(
     bool IsMasked,
     VisibilityStatus VisibilityStatus);
 
-public class VisibilityMediator : IVisibilityMediator
+/// <summary>
+/// Enforces member privacy rules by masking hidden member profiles for non-admin requesters.
+/// A member is masked when their VisibilityStatus != Visible and the requester is not Owner/Admin.
+/// </summary>
+public class VisibilityService : IVisibilityService
 {
-    public static Dictionary<Guid, CanvasMemberVisibility> ResolveVisibility(
+    /// <inheritdoc/>
+    public Dictionary<Guid, CanvasMemberVisibility> ResolveForCanvas(
         IEnumerable<TreeNode> nodes,
         TreeRole? requesterRole)
-    {
-        var isTreeAdmin = requesterRole is TreeRole.Owner or TreeRole.Admin;
-        return ResolveVisibility(nodes, isTreeAdmin);
-    }
-
-    public static Dictionary<Guid, CanvasMemberVisibility> ResolveVisibility(
-        IEnumerable<TreeNode> nodes,
-        bool isTreeAdmin)
     {
         ArgumentNullException.ThrowIfNull(nodes);
 
@@ -33,23 +30,17 @@ public class VisibilityMediator : IVisibilityMediator
             .Select(m => m.FamilyMember)
             .Where(m => m != null!);
 
-        return ResolveVisibility(familyMembers!, isTreeAdmin);
+        return ResolveForMembers(familyMembers!, requesterRole);
     }
 
-    public static Dictionary<Guid, CanvasMemberVisibility> ResolveVisibility(
+    /// <inheritdoc/>
+    public Dictionary<Guid, CanvasMemberVisibility> ResolveForMembers(
         IEnumerable<FamilyMember> members,
         TreeRole? requesterRole)
     {
-        var isTreeAdmin = requesterRole is TreeRole.Owner or TreeRole.Admin;
-        return ResolveVisibility(members, isTreeAdmin);
-    }
-
-    public static Dictionary<Guid, CanvasMemberVisibility> ResolveVisibility(
-        IEnumerable<FamilyMember> members,
-        bool isTreeAdmin)
-    {
         ArgumentNullException.ThrowIfNull(members);
 
+        var isTreeAdmin = requesterRole is TreeRole.Owner or TreeRole.Admin;
         var resultMap = new Dictionary<Guid, CanvasMemberVisibility>();
 
         foreach (FamilyMember member in members)
@@ -77,22 +68,6 @@ public class VisibilityMediator : IVisibilityMediator
 
         return resultMap;
     }
-
-    Dictionary<Guid, CanvasMemberVisibility> IVisibilityMediator.ResolveVisibility(
-        IEnumerable<TreeNode> nodes,
-        TreeRole? requesterRole) => ResolveVisibility(nodes, requesterRole);
-
-    Dictionary<Guid, CanvasMemberVisibility> IVisibilityMediator.ResolveVisibility(
-        IEnumerable<TreeNode> nodes,
-        bool isTreeAdmin) => ResolveVisibility(nodes, isTreeAdmin);
-
-    Dictionary<Guid, CanvasMemberVisibility> IVisibilityMediator.ResolveVisibility(
-        IEnumerable<FamilyMember> members,
-        TreeRole? requesterRole) => ResolveVisibility(members, requesterRole);
-
-    Dictionary<Guid, CanvasMemberVisibility> IVisibilityMediator.ResolveVisibility(
-        IEnumerable<FamilyMember> members,
-        bool isTreeAdmin) => ResolveVisibility(members, isTreeAdmin);
 
     private static ProfileInfo MergeProfile(ProfileInfo userProfile, ProfileInfo memberProfile)
     {

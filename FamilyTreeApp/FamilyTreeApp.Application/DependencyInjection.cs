@@ -1,4 +1,5 @@
 using FamilyTreeApp.Application.Common.Behaviors;
+using FamilyTreeApp.Application.Trees.Services;
 using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +13,8 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        services.AddScoped<IVisibilityMediator, VisibilityMediator>();
+        services.AddScoped<IVisibilityService, VisibilityService>();
+        services.AddScoped<ITreeRoleService, TreeRoleService>();
 
         services.Scan(scan => scan
             .FromAssemblies(assembly)

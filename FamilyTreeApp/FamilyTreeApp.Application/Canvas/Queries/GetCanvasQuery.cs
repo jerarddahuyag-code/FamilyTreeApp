@@ -1,11 +1,11 @@
 using FamilyTreeApp.Application.Canvas.DTOs;
 using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Trees.Services;
 using FamilyTreeApp.Domain.Canvas.Entities;
 using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
-using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Canvas.Queries;
@@ -18,15 +18,13 @@ public record GetCanvasQuery : IRequest<GetCanvasQueryResponse>
 
 public class GetCanvasQueryHandler(
     IApplicationDbContext dbContext,
-    IVisibilityMediator visibilityMediator)
+    IVisibilityService visibilityService,
+    ITreeRoleService treeRoleService)
     : IQueryHandler<GetCanvasQuery, GetCanvasQueryResponse>
 {
     public async Task<Result<GetCanvasQueryResponse>> HandleAsync(GetCanvasQuery query, CancellationToken cancellationToken = default)
     {
-        TreeRole? requesterRole = await dbContext.TreeRbacs
-            .Where(r => r.TreeId == query.TreeId && r.UserId == query.RequestingUserId)
-            .Select(r => (TreeRole?)r.TreeRole)
-            .FirstOrDefaultAsync(cancellationToken);
+        var requesterRole = await treeRoleService.GetUserRoleAsync(query.TreeId, query.RequestingUserId, cancellationToken);
 
         List<TreeNode> nodes = await dbContext.TreeNodes
             .AsNoTracking()
@@ -41,7 +39,7 @@ public class GetCanvasQueryHandler(
             .Where(e => e.TreeId == query.TreeId)
             .ToListAsync(cancellationToken);
 
-        Dictionary<Guid, CanvasMemberVisibility> visibilityMap = visibilityMediator.ResolveVisibility(nodes, requesterRole);
+        Dictionary<Guid, CanvasMemberVisibility> visibilityMap = visibilityService.ResolveForCanvas(nodes, requesterRole);
 
         var nodeDtos = nodes.Select(node =>
         {

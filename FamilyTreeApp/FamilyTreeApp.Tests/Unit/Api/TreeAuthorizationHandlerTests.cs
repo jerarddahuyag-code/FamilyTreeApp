@@ -1,182 +1,114 @@
 using FamilyTreeApp.Api.Authorization;
-using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Domain.Trees.Entities;
+using FamilyTreeApp.Application.Trees.Services;
 using FamilyTreeApp.Domain.Trees.Enums;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
-using MockQueryable.NSubstitute;
 using NSubstitute;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace FamilyTreeApp.Tests.Unit.Api;
 
 public class TreeAuthorizationHandlerTests
 {
-    private readonly IApplicationDbContext _dbContext;
-    private readonly IDistributedCache _cache;
+    private readonly ITreeRoleService _treeRoleService;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<TreeAuthorizationHandler> _logger;
     private readonly TreeAuthorizationHandler _sut;
 
     public TreeAuthorizationHandlerTests()
     {
-        _dbContext = Substitute.For<IApplicationDbContext>();
-        _cache = Substitute.For<IDistributedCache>();
+        _treeRoleService = Substitute.For<ITreeRoleService>();
         _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
-        _logger = Substitute.For<ILogger<TreeAuthorizationHandler>>();
 
-        _sut = new TreeAuthorizationHandler(_dbContext, _cache, _httpContextAccessor, _logger);
+        _sut = new TreeAuthorizationHandler(_treeRoleService, _httpContextAccessor);
     }
 
     [Fact]
     public async Task HandleAsync_HttpContextIsNull_DoesNotSucceedRequirement()
     {
-        // Arrange
         _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
         var requirement = new TreeOwnerRequirement();
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([requirement], user, null);
+        var context = BuildAuthContext([requirement], Guid.NewGuid());
 
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.HasSucceeded.Should().BeFalse();
     }
 
     [Fact]
     public async Task HandleAsync_RouteDataHasNoTreeId_DoesNotSucceedRequirement()
     {
-        // Arrange
         var httpContext = new DefaultHttpContext();
         _httpContextAccessor.HttpContext.Returns(httpContext);
-        var requirement = new TreeOwnerRequirement();
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([requirement], user, null);
+        var context = BuildAuthContext([new TreeOwnerRequirement()], Guid.NewGuid());
 
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.HasSucceeded.Should().BeFalse();
     }
 
     [Fact]
     public async Task HandleAsync_UserHasNoNameIdentifierClaim_DoesNotSucceedRequirement()
     {
-        // Arrange
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["treeId"] = Guid.NewGuid().ToString();
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+        var httpContext = BuildHttpContext(Guid.NewGuid(), "treeId");
         _httpContextAccessor.HttpContext.Returns(httpContext);
-        var requirement = new TreeOwnerRequirement();
         var user = new ClaimsPrincipal(new ClaimsIdentity([], "Test"));
-        var context = new AuthorizationHandlerContext([requirement], user, null);
+        var context = new AuthorizationHandlerContext([new TreeOwnerRequirement()], user, null);
 
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.HasSucceeded.Should().BeFalse();
     }
 
     [Fact]
-    public async Task HandleAsync_RoleInCacheIsOwner_SucceedsOwnerAdminAndMemberRequirements()
+    public async Task HandleAsync_RoleIsOwner_SucceedsOwnerAdminAndMemberRequirements()
     {
-        // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["treeId"] = treeId.ToString();
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
-        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _httpContextAccessor.HttpContext.Returns(BuildHttpContext(treeId, "treeId"));
+        _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
+            .Returns(TreeRole.Owner);
 
-        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Owner);
-        _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
-            .Returns(cachedBytes);
+        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
-        var ownerReq = new TreeOwnerRequirement();
-        var adminReq = new TreeAdminRequirement();
-        var memberReq = new TreeMemberRequirement();
-
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([ownerReq, adminReq, memberReq], user, null);
-
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.HasSucceeded.Should().BeTrue();
         context.PendingRequirements.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task HandleAsync_RoleInCacheIsAdmin_SucceedsAdminAndMemberRequirementsOnly()
+    public async Task HandleAsync_RoleIsAdmin_SucceedsAdminAndMemberRequirementsOnly()
     {
-        // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["treeId"] = treeId.ToString();
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
-        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _httpContextAccessor.HttpContext.Returns(BuildHttpContext(treeId, "treeId"));
+        _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
+            .Returns(TreeRole.Admin);
 
-        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Admin);
-        _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
-            .Returns(cachedBytes);
+        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
-        var ownerReq = new TreeOwnerRequirement();
-        var adminReq = new TreeAdminRequirement();
-        var memberReq = new TreeMemberRequirement();
-
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([ownerReq, adminReq, memberReq], user, null);
-
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.PendingRequirements.Should().ContainSingle(r => r is TreeOwnerRequirement);
         context.PendingRequirements.Should().NotContain(r => r is TreeAdminRequirement);
         context.PendingRequirements.Should().NotContain(r => r is TreeMemberRequirement);
     }
 
     [Fact]
-    public async Task HandleAsync_RoleInCacheIsMember_SucceedsMemberRequirementOnly()
+    public async Task HandleAsync_RoleIsMember_SucceedsMemberRequirementOnly()
     {
-        // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["treeId"] = treeId.ToString();
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
-        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _httpContextAccessor.HttpContext.Returns(BuildHttpContext(treeId, "treeId"));
+        _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
+            .Returns(TreeRole.Member);
 
-        var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(TreeRole.Member);
-        _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
-            .Returns(cachedBytes);
+        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
-        var ownerReq = new TreeOwnerRequirement();
-        var adminReq = new TreeAdminRequirement();
-        var memberReq = new TreeMemberRequirement();
-
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([ownerReq, adminReq, memberReq], user, null);
-
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
         context.PendingRequirements.Should().HaveCount(2);
         context.PendingRequirements.Should().Contain(r => r is TreeOwnerRequirement);
         context.PendingRequirements.Should().Contain(r => r is TreeAdminRequirement);
@@ -184,68 +116,58 @@ public class TreeAuthorizationHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_CacheMiss_ReadsFromDbAndSetsCache()
+    public async Task HandleAsync_UserNotInTree_DoesNotSucceedRequirement()
     {
-        // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["id"] = treeId; // Test route value 'id' as Guid
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
-        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _httpContextAccessor.HttpContext.Returns(BuildHttpContext(treeId, "treeId"));
+        _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
+            .Returns((TreeRole?)null);
 
-        _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
-            .Returns((byte[]?)null);
+        var context = BuildAuthContext([new TreeMemberRequirement()], userId);
 
-        TreeRbac rbac = TreeRbac.Create(Guid.NewGuid(), treeId, userId, TreeRole.Owner).Value;
-        var rbacList = new List<TreeRbac> { rbac };
-        DbSet<TreeRbac> mockDbSet = rbacList.BuildMockDbSet();
-        _dbContext.TreeRbacs.Returns(mockDbSet);
-
-        var ownerReq = new TreeOwnerRequirement();
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([ownerReq], user, null);
-
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
-        context.HasSucceeded.Should().BeTrue();
-        await _cache.Received(1).SetAsync(
-            $"rbac:{treeId}:{userId}",
-            Arg.Any<byte[]>(),
-            Arg.Any<DistributedCacheEntryOptions>(),
-            Arg.Any<CancellationToken>());
+        context.HasSucceeded.Should().BeFalse();
     }
 
     [Fact]
-    public async Task HandleAsync_CacheMissAndNotFoundInDb_DoesNotSucceedRequirement()
+    public async Task HandleAsync_RouteValueIsGuidType_ResolvesTreeIdCorrectly()
     {
-        // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var httpContext = new DefaultHttpContext();
-        var routeData = new RouteData();
-        routeData.Values["treeId"] = treeId.ToString();
-        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
-        _httpContextAccessor.HttpContext.Returns(httpContext);
+        // Use "id" key with a raw Guid value (not string)
+        _httpContextAccessor.HttpContext.Returns(BuildHttpContext(treeId, "id", asGuid: true));
+        _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
+            .Returns(TreeRole.Owner);
 
-        _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())
-            .Returns((byte[]?)null);
+        var context = BuildAuthContext([new TreeOwnerRequirement()], userId);
 
-        var emptyList = new List<TreeRbac>();
-        DbSet<TreeRbac> mockDbSet = emptyList.BuildMockDbSet();
-        _dbContext.TreeRbacs.Returns(mockDbSet);
-
-        var memberReq = new TreeMemberRequirement();
-        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Test"));
-        var context = new AuthorizationHandlerContext([memberReq], user, null);
-
-        // Act
         await _sut.HandleAsync(context);
 
-        // Assert
-        context.HasSucceeded.Should().BeFalse();
+        context.HasSucceeded.Should().BeTrue();
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    private static DefaultHttpContext BuildHttpContext(Guid treeId, string routeKey, bool asGuid = false)
+    {
+        var httpContext = new DefaultHttpContext();
+        var routeData = new RouteData();
+        routeData.Values[routeKey] = asGuid ? (object)treeId : treeId.ToString();
+        httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+        return httpContext;
+    }
+
+    private static AuthorizationHandlerContext BuildAuthContext(
+        IEnumerable<IAuthorizationRequirement> requirements,
+        Guid userId)
+    {
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, userId.ToString())],
+            "Test"));
+        return new AuthorizationHandlerContext(requirements.ToList(), user, null);
     }
 }

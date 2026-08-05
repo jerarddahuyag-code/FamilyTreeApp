@@ -1,36 +1,18 @@
-using FamilyTreeApp.Application.Common.Interfaces;
-using FamilyTreeApp.Domain.Trees.Entities;
+using FamilyTreeApp.Application.Trees.Services;
 using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace FamilyTreeApp.Api.Authorization;
 
-public class TreeAuthorizationHandler : IAuthorizationHandler
+public class TreeAuthorizationHandler(
+    ITreeRoleService treeRoleService,
+    IHttpContextAccessor httpContextAccessor)
+    : IAuthorizationHandler
 {
-    private readonly IApplicationDbContext _dbContext;
-    private readonly IDistributedCache _cache;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<TreeAuthorizationHandler> _logger;
-
-    public TreeAuthorizationHandler(
-        IApplicationDbContext dbContext,
-        IDistributedCache cache,
-        IHttpContextAccessor httpContextAccessor,
-        ILogger<TreeAuthorizationHandler> logger)
-    {
-        _dbContext = dbContext;
-        _cache = cache;
-        _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
-    }
-
     public async Task HandleAsync(AuthorizationHandlerContext context)
     {
-        HttpContext? httpContext = _httpContextAccessor.HttpContext;
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
         {
             return;
@@ -48,7 +30,7 @@ public class TreeAuthorizationHandler : IAuthorizationHandler
             return;
         }
 
-        TreeRole? role = await GetUserTreeRoleAsync(treeId, userId, httpContext.RequestAborted);
+        TreeRole? role = await treeRoleService.GetUserRoleAsync(treeId, userId, httpContext.RequestAborted);
         if (role == null)
         {
             return;
@@ -89,48 +71,5 @@ public class TreeAuthorizationHandler : IAuthorizationHandler
         }
 
         return false;
-    }
-
-    private async Task<TreeRole?> GetUserTreeRoleAsync(Guid treeId, Guid userId, CancellationToken cancellationToken)
-    {
-        var cacheKey = $"rbac:{treeId}:{userId}";
-        try
-        {
-            var cachedBytes = await _cache.GetAsync(cacheKey, cancellationToken);
-            if (cachedBytes != null)
-            {
-                TreeRole cachedRole = JsonSerializer.Deserialize<TreeRole>(cachedBytes);
-                return cachedRole;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to read RBAC role from distributed cache");
-        }
-
-        TreeRbac? rbac = await _dbContext.TreeRbacs
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.TreeId == treeId && r.UserId == userId, cancellationToken);
-
-        if (rbac == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(rbac.TreeRole);
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            };
-            await _cache.SetAsync(cacheKey, bytes, options, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to set RBAC role in distributed cache");
-        }
-
-        return rbac.TreeRole;
     }
 }
