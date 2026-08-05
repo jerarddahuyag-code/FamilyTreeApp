@@ -6,6 +6,7 @@ using FamilyTreeApp.Domain.Canvas.Services;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
+using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Canvas.Queries;
@@ -24,7 +25,7 @@ public class GetCanvasQueryHandler(
 {
     public async Task<Result<GetCanvasQueryResponse>> HandleAsync(GetCanvasQuery query, CancellationToken cancellationToken = default)
     {
-        var requesterRole = await treeRoleService.GetUserRoleAsync(query.TreeId, query.RequestingUserId, cancellationToken);
+        TreeRole? requesterRole = await treeRoleService.GetUserRoleAsync(query.TreeId, query.RequestingUserId, cancellationToken);
 
         List<TreeNode> nodes = await dbContext.TreeNodes
             .AsNoTracking()

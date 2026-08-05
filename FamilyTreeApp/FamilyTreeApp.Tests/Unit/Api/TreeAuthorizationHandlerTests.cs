@@ -29,7 +29,7 @@ public class TreeAuthorizationHandlerTests
     {
         _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
         var requirement = new TreeOwnerRequirement();
-        var context = BuildAuthContext([requirement], Guid.NewGuid());
+        AuthorizationHandlerContext context = BuildAuthContext([requirement], Guid.NewGuid());
 
         await _sut.HandleAsync(context);
 
@@ -41,7 +41,7 @@ public class TreeAuthorizationHandlerTests
     {
         var httpContext = new DefaultHttpContext();
         _httpContextAccessor.HttpContext.Returns(httpContext);
-        var context = BuildAuthContext([new TreeOwnerRequirement()], Guid.NewGuid());
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeOwnerRequirement()], Guid.NewGuid());
 
         await _sut.HandleAsync(context);
 
@@ -51,7 +51,7 @@ public class TreeAuthorizationHandlerTests
     [Fact]
     public async Task HandleAsync_UserHasNoNameIdentifierClaim_DoesNotSucceedRequirement()
     {
-        var httpContext = BuildHttpContext(Guid.NewGuid(), "treeId");
+        DefaultHttpContext httpContext = BuildHttpContext(Guid.NewGuid(), "treeId");
         _httpContextAccessor.HttpContext.Returns(httpContext);
         var user = new ClaimsPrincipal(new ClaimsIdentity([], "Test"));
         var context = new AuthorizationHandlerContext([new TreeOwnerRequirement()], user, null);
@@ -70,7 +70,7 @@ public class TreeAuthorizationHandlerTests
         _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
             .Returns(TreeRole.Owner);
 
-        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
         await _sut.HandleAsync(context);
 
@@ -87,7 +87,7 @@ public class TreeAuthorizationHandlerTests
         _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
             .Returns(TreeRole.Admin);
 
-        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
         await _sut.HandleAsync(context);
 
@@ -105,7 +105,7 @@ public class TreeAuthorizationHandlerTests
         _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
             .Returns(TreeRole.Member);
 
-        var context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeOwnerRequirement(), new TreeAdminRequirement(), new TreeMemberRequirement()], userId);
 
         await _sut.HandleAsync(context);
 
@@ -124,7 +124,7 @@ public class TreeAuthorizationHandlerTests
         _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
             .Returns((TreeRole?)null);
 
-        var context = BuildAuthContext([new TreeMemberRequirement()], userId);
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeMemberRequirement()], userId);
 
         await _sut.HandleAsync(context);
 
@@ -141,7 +141,7 @@ public class TreeAuthorizationHandlerTests
         _treeRoleService.GetUserRoleAsync(treeId, userId, Arg.Any<CancellationToken>())
             .Returns(TreeRole.Owner);
 
-        var context = BuildAuthContext([new TreeOwnerRequirement()], userId);
+        AuthorizationHandlerContext context = BuildAuthContext([new TreeOwnerRequirement()], userId);
 
         await _sut.HandleAsync(context);
 

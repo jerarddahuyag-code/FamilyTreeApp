@@ -31,7 +31,7 @@ public class TreeRoleServiceTests
         // Arrange
         var treeId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var expectedRole = TreeRole.Admin;
+        TreeRole expectedRole = TreeRole.Admin;
         var cachedBytes = JsonSerializer.SerializeToUtf8Bytes(expectedRole);
 
         _cache.GetAsync($"rbac:{treeId}:{userId}", Arg.Any<CancellationToken>())

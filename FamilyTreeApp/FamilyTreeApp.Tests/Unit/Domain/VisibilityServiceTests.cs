@@ -31,8 +31,8 @@ public class VisibilityServiceTests
         FamilyMember member = FamilyMember.Create(memberId, Guid.NewGuid(), null, VisibilityStatus.Hidden, SampleProfile).Value;
 
         // Act — non-admin roles: Member and null (public)
-        var resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
-        var resultPublic = _sut.ResolveForMembers([member], null);
+        Dictionary<Guid, CanvasMemberVisibility> resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
+        Dictionary<Guid, CanvasMemberVisibility> resultPublic = _sut.ResolveForMembers([member], null);
 
         // Assert
         resultMember[memberId].IsMasked.Should().BeTrue();
@@ -50,8 +50,8 @@ public class VisibilityServiceTests
         FamilyMember member = FamilyMember.Create(memberId, Guid.NewGuid(), null, VisibilityStatus.Visible, SampleProfile).Value;
 
         // Act — public requester (null) and Member role
-        var resultPublic = _sut.ResolveForMembers([member], null);
-        var resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
+        Dictionary<Guid, CanvasMemberVisibility> resultPublic = _sut.ResolveForMembers([member], null);
+        Dictionary<Guid, CanvasMemberVisibility> resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
 
         // Assert
         resultPublic[memberId].IsMasked.Should().BeFalse();
@@ -71,7 +71,7 @@ public class VisibilityServiceTests
         FamilyMember member = FamilyMember.Create(memberId, Guid.NewGuid(), null, VisibilityStatus.Hidden, SampleProfile).Value;
 
         // Act
-        var result = _sut.ResolveForMembers([member], adminRole);
+        Dictionary<Guid, CanvasMemberVisibility> result = _sut.ResolveForMembers([member], adminRole);
 
         // Assert
         result[memberId].IsMasked.Should().BeFalse();
@@ -88,8 +88,8 @@ public class VisibilityServiceTests
         member.TransitionToVisibility(VisibilityStatus.Pending);
 
         // Act
-        var resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
-        var resultAdmin = _sut.ResolveForMembers([member], TreeRole.Admin);
+        Dictionary<Guid, CanvasMemberVisibility> resultMember = _sut.ResolveForMembers([member], TreeRole.Member);
+        Dictionary<Guid, CanvasMemberVisibility> resultAdmin = _sut.ResolveForMembers([member], TreeRole.Admin);
 
         // Assert
         resultMember[memberId].IsMasked.Should().BeTrue();
@@ -118,7 +118,7 @@ public class VisibilityServiceTests
         FamilyMember member = FamilyMember.Create(memberId, Guid.NewGuid(), null, VisibilityStatus.Visible, SampleProfile).Value;
 
         // Act
-        var result = _sut.ResolveForMembers([member, member, member], null);
+        Dictionary<Guid, CanvasMemberVisibility> result = _sut.ResolveForMembers([member, member, member], null);
 
         // Assert
         result.Should().HaveCount(1);
