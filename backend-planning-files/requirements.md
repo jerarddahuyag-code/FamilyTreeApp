@@ -122,6 +122,10 @@ to reduce database round-trips on repeated requests.
 **WHEN** tree access is modified,
 **THE SYSTEM SHALL** verify the requesting user has TreeOwner role.
 
+### R-2.3 Accessible Trees Endpoint
+**WHEN** a user requests their accessible trees via `GET /api/trees`,
+**THE SYSTEM SHALL** query `TreeRbac` for the requesting user's `UserId` and return the list of corresponding `Tree` entities.
+
 ---
 
 ## Phase 3 — Roster (Complete)
@@ -234,12 +238,12 @@ if they do not.
 
 | Method | Route | Policy | Command/Query |
 |--------|-------|--------|---------------|
-| `GET` | `/api/v1/trees/{treeId}/canvas` | `TreeMember` | `GetCanvasQuery` |
-| `PUT` | `/api/v1/trees/{treeId}/canvas` | `TreeAdmin` | `UpdateCanvasCommand` (bulk coords) |
-| `POST` | `/api/v1/trees/{treeId}/canvas/nodes` | `TreeAdmin` | `AddTreeNodeCommand` |
-| `DELETE` | `/api/v1/trees/{treeId}/canvas/nodes/{nodeId}` | `TreeAdmin` | `RemoveTreeNodeCommand` |
-| `POST` | `/api/v1/trees/{treeId}/canvas/edges` | `TreeAdmin` | `AddTreeEdgeCommand` |
-| `DELETE` | `/api/v1/trees/{treeId}/canvas/edges/{edgeId}` | `TreeAdmin` | `RemoveTreeEdgeCommand` |
+| `GET` | `/api/trees/{treeId}/canvas` | `TreeMember` | `GetCanvasQuery` |
+| `PUT` | `/api/trees/{treeId}/canvas` | `TreeAdmin` | `UpdateCanvasCommand` (bulk coords) |
+| `POST` | `/api/trees/{treeId}/canvas/nodes` | `TreeAdmin` | `AddTreeNodeCommand` |
+| `DELETE` | `/api/trees/{treeId}/canvas/nodes/{nodeId}` | `TreeAdmin` | `RemoveTreeNodeCommand` |
+| `POST` | `/api/trees/{treeId}/canvas/edges` | `TreeAdmin` | `AddTreeEdgeCommand` |
+| `DELETE` | `/api/trees/{treeId}/canvas/edges/{edgeId}` | `TreeAdmin` | `RemoveTreeEdgeCommand` |
 
 ---
 

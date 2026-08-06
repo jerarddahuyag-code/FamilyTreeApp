@@ -21,7 +21,7 @@ public class UsersController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -33,7 +33,7 @@ public class UsersController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpPost]

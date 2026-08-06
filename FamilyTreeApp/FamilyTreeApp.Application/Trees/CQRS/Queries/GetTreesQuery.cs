@@ -7,6 +7,7 @@ namespace FamilyTreeApp.Application.Trees.CQRS.Queries;
 
 public record GetTreesQuery : IRequest<GetTreesQueryResponse>
 {
+    public required Guid UserId { get; init; }
     public required bool IncludePrivate { get; init; }
 }
 
@@ -28,9 +29,15 @@ public class GetTreesQueryHandler(
 {
     public async Task<Result<GetTreesQueryResponse>> HandleAsync(GetTreesQuery query, CancellationToken cancellationToken)
     {
+        Guid[] treeIds = await context.TreeRbacs
+            .Where(r => r.UserId == query.UserId)
+            .Select(r => r.TreeId)
+            .ToArrayAsync(cancellationToken);
+
         List<Tree> trees = await context.Trees
             .Where(t => (query.IncludePrivate || t.IsPublic)
-                && t.DeletedAt == null)
+                && t.DeletedAt == null
+                && treeIds.Contains(t.TreeId))
             .ToListAsync(cancellationToken);
         var response = new GetTreesQueryResponse
         {

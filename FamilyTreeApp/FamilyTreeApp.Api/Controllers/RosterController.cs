@@ -30,7 +30,7 @@ public class RosterController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpPost("members")]
@@ -189,7 +189,7 @@ public class RosterController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpPost("members/{memberId:guid}/relationships")]

@@ -10,7 +10,7 @@ namespace FamilyTreeApp.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/v1/trees/{treeId:guid}/canvas")]
+[Route("api/trees/{treeId:guid}/canvas")]
 public class CanvasController : ApiControllerBase
 {
     [HttpGet]
@@ -31,7 +31,7 @@ public class CanvasController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpPut]

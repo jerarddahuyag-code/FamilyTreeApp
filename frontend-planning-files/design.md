@@ -20,9 +20,15 @@ The backend handles Google OAuth and issues HttpOnly cookies. The frontend simpl
 ### Next.js Proxy
 During development, Next.js will be configured to proxy API requests to the .NET backend running on `localhost:8080` to avoid CORS issues and simplify cookie management.
 
+### Routing Structure
+* `/dashboard`: Lists accessible trees.
+* `/trees/[treeId]`: The actual canvas workspace containing the sidebar (members) and the visual canvas.
+
 ### Canvas Data Model
-* **Nodes:** Mapped from `TreeNode` and `FamilyMember` data.
-* **Edges:** Mapped from `TreeEdge` and `FamilyMemberRelationship` entities provided by the backend.
+The frontend strictly adheres to the backend's 3-layer architecture:
+* **Biological Layer**: `FamilyMember` and `FamilyMemberRelationship`.
+* **Visual Layer**: `TreeNode` (with coordinates and types), `TreeNodeMember` (join table for mapping members to nodes), and `TreeEdge`.
+* **Note**: The frontend is responsible for orchestrating mutations across these two distinct layers (e.g., adding a biological member before placing a visual node).
 
 ## Confidence Score
 **Confidence Score: 95%**

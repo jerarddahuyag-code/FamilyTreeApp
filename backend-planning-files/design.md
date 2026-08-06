@@ -333,6 +333,13 @@ FamilyMemberRelationship                               TreeEdge
 
 ---
 
+## 6.5 Trees Architecture
+
+The Trees module manages the core family tree instances and Role-Based Access Control (`TreeRbac`).
+* **Accessible Trees**: `GET /api/trees` fetches all trees the current authenticated user has access to by querying `TreeRbac` for the `UserId` and mapping to the corresponding `Tree` entities via `GetAccessibleTreesQuery`.
+
+---
+
 ## 7. Error Handling
 
 ### 7.1 Layer Responsibilities

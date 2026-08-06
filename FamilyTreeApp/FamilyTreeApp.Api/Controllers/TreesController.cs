@@ -15,13 +15,13 @@ public class TreesController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllTrees([FromQuery] GetTreesQuery request, [FromServices] IQueryHandler<GetTreesQuery, GetTreesQueryResponse> handler, CancellationToken cancellationToken)
     {
-        Result<GetTreesQueryResponse> result = await handler.HandleAsync(request, cancellationToken);
+        Result<GetTreesQueryResponse> result = await handler.HandleAsync(request with { UserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) }, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -33,14 +33,14 @@ public class TreesController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateTree(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
     {
         // Set the owner id to the currently authenticated user
-        request = request with { OwnerId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) };
+        request = request with { OwnerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) };
 
         Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)
