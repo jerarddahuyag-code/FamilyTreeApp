@@ -38,17 +38,17 @@ public class CanvasControllerTests
         // Arrange
         var treeId = Guid.NewGuid();
         IQueryHandler<GetCanvasQuery, GetCanvasQueryResponse> handler = Substitute.For<IQueryHandler<GetCanvasQuery, GetCanvasQueryResponse>>();
-        var expectedDto = new GetCanvasQueryResponse([], []);
+        var expectedReturn = Result.Success(new GetCanvasQueryResponse([], []));
 
         handler.HandleAsync(Arg.Any<GetCanvasQuery>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Success(expectedDto));
+            .Returns(expectedReturn);
 
         // Act
         IActionResult result = await _sut.GetCanvas(treeId, handler, CancellationToken.None);
 
         // Assert
         OkObjectResult okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value!.Should().Be(expectedDto);
+        okResult.Value!.Should().Be(expectedReturn);
 
         await handler.Received(1).HandleAsync(
             Arg.Is<GetCanvasQuery>(q => q != null && q.TreeId == treeId && q.RequestingUserId == _userId),
