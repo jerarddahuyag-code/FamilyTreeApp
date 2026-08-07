@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".github/workflows/main_AzureCourseDemoJKD.yml" />
     <File Path="design.md" />
     <File Path="docker-compose.yml" />
     <File Path="implementation_plan.md" />
