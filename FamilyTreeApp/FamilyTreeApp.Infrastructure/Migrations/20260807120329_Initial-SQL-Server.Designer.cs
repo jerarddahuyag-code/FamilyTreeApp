@@ -3,17 +3,17 @@ using System;
 using FamilyTreeApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace FamilyTreeApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260805104347_AddCanvas")]
-    partial class AddCanvas
+    [Migration("20260807120329_Initial-SQL-Server")]
+    partial class InitialSQLServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,35 +21,35 @@ namespace FamilyTreeApp.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("FamilyTreeApp.Domain.Canvas.Entities.TreeEdge", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("SourceNodeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("source_node_id");
 
                     b.Property<Guid>("TargetNodeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("target_node_id");
 
                     b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
@@ -67,23 +67,23 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<int>("NodeType")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("node_type");
 
                     b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
@@ -96,11 +96,11 @@ namespace FamilyTreeApp.Infrastructure.Migrations
             modelBuilder.Entity("FamilyTreeApp.Domain.Canvas.Entities.TreeNodeMember", b =>
                 {
                     b.Property<Guid>("TreeNodeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_node_id");
 
                     b.Property<Guid>("FamilyMemberId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("family_member_id");
 
                     b.HasKey("TreeNodeId", "FamilyMemberId");
@@ -114,27 +114,27 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("FamilyMemberId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("family_member_id");
 
                     b.Property<Guid?>("ClaimedByUserId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("claimed_by_user_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.Property<int>("VisibilityStatus")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("visibility_status");
 
                     b.HasKey("FamilyMemberId");
@@ -148,31 +148,31 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("FamilyMemberRelationshipId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("family_member_relationship_id");
 
                     b.Property<Guid>("BaseFamilyMemberId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("base_family_member_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("RelatedFamilyMemberId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("related_family_member_id");
 
                     b.Property<int>("RelationshipType")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("relationship_type");
 
                     b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.HasKey("FamilyMemberRelationshipId");
@@ -189,35 +189,35 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("TreeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("deleted_at");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasColumnType("nvarchar(2000)")
                         .HasColumnName("description");
 
                     b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasColumnName("is_public");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("name");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.HasKey("TreeId");
@@ -231,27 +231,27 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("TreeRbacId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_rbac_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("tree_id");
 
                     b.Property<int>("TreeRole")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("tree_role");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
 
                     b.HasKey("TreeRbacId");
@@ -268,27 +268,27 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("ExternalLoginId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("external_login_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("provider");
 
                     b.Property<string>("ProviderKey")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("provider_key");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
 
                     b.HasKey("ExternalLoginId");
@@ -305,28 +305,28 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                 {
                     b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("email");
 
                     b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasColumnName("is_public");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
                     b.HasKey("UserId");
@@ -342,13 +342,13 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                     b.HasOne("FamilyTreeApp.Domain.Canvas.Entities.TreeNode", null)
                         .WithMany()
                         .HasForeignKey("SourceNodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FamilyTreeApp.Domain.Canvas.Entities.TreeNode", null)
                         .WithMany()
                         .HasForeignKey("TargetNodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FamilyTreeApp.Domain.Trees.Entities.Tree", null)
@@ -369,14 +369,14 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                     b.OwnsOne("FamilyTreeApp.Domain.Canvas.ValueObjects.CanvasCoordinates", "Coordinates", b1 =>
                         {
                             b1.Property<Guid>("TreeNodeId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<double>("X")
-                                .HasColumnType("double precision")
+                                .HasColumnType("float")
                                 .HasColumnName("x");
 
                             b1.Property<double>("Y")
-                                .HasColumnType("double precision")
+                                .HasColumnType("float")
                                 .HasColumnName("y");
 
                             b1.HasKey("TreeNodeId");
@@ -417,43 +417,43 @@ namespace FamilyTreeApp.Infrastructure.Migrations
                         .HasForeignKey("ClaimedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.OwnsOne("FamilyTreeApp.Domain.ValueObjects.ProfileInfo", "ProfileInfo", b1 =>
+                    b.OwnsOne("FamilyTreeApp.Domain.Common.ValueObjects.ProfileInfo", "ProfileInfo", b1 =>
                         {
                             b1.Property<Guid>("FamilyMemberId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("AvatarUrl")
                                 .HasMaxLength(500)
-                                .HasColumnType("character varying(500)")
+                                .HasColumnType("nvarchar(500)")
                                 .HasColumnName("avatar_url");
 
                             b1.Property<string>("Bio")
                                 .HasMaxLength(500)
-                                .HasColumnType("character varying(500)")
+                                .HasColumnType("nvarchar(500)")
                                 .HasColumnName("bio");
 
                             b1.Property<DateTime?>("BirthDate")
-                                .HasColumnType("timestamp with time zone")
+                                .HasColumnType("datetime2")
                                 .HasColumnName("date_of_birth");
 
                             b1.Property<string>("FirstName")
                                 .HasMaxLength(100)
-                                .HasColumnType("character varying(100)")
+                                .HasColumnType("nvarchar(100)")
                                 .HasColumnName("first_name");
 
                             b1.Property<int?>("Gender")
                                 .HasMaxLength(50)
-                                .HasColumnType("integer")
+                                .HasColumnType("int")
                                 .HasColumnName("gender");
 
                             b1.Property<string>("LastName")
                                 .HasMaxLength(100)
-                                .HasColumnType("character varying(100)")
+                                .HasColumnType("nvarchar(100)")
                                 .HasColumnName("last_name");
 
                             b1.Property<string>("PhoneNumber")
                                 .HasMaxLength(50)
-                                .HasColumnType("character varying(50)")
+                                .HasColumnType("nvarchar(50)")
                                 .HasColumnName("phone_number");
 
                             b1.HasKey("FamilyMemberId");
@@ -509,43 +509,43 @@ namespace FamilyTreeApp.Infrastructure.Migrations
 
             modelBuilder.Entity("FamilyTreeApp.Domain.Users.Entities.User", b =>
                 {
-                    b.OwnsOne("FamilyTreeApp.Domain.ValueObjects.ProfileInfo", "ProfileInfo", b1 =>
+                    b.OwnsOne("FamilyTreeApp.Domain.Common.ValueObjects.ProfileInfo", "ProfileInfo", b1 =>
                         {
                             b1.Property<Guid>("UserId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("AvatarUrl")
                                 .HasMaxLength(500)
-                                .HasColumnType("character varying(500)")
+                                .HasColumnType("nvarchar(500)")
                                 .HasColumnName("avatar_url");
 
                             b1.Property<string>("Bio")
                                 .HasMaxLength(500)
-                                .HasColumnType("character varying(500)")
+                                .HasColumnType("nvarchar(500)")
                                 .HasColumnName("bio");
 
                             b1.Property<DateTime?>("BirthDate")
-                                .HasColumnType("timestamp with time zone")
+                                .HasColumnType("datetime2")
                                 .HasColumnName("date_of_birth");
 
                             b1.Property<string>("FirstName")
                                 .HasMaxLength(100)
-                                .HasColumnType("character varying(100)")
+                                .HasColumnType("nvarchar(100)")
                                 .HasColumnName("first_name");
 
                             b1.Property<int?>("Gender")
                                 .HasMaxLength(50)
-                                .HasColumnType("integer")
+                                .HasColumnType("int")
                                 .HasColumnName("gender");
 
                             b1.Property<string>("LastName")
                                 .HasMaxLength(100)
-                                .HasColumnType("character varying(100)")
+                                .HasColumnType("nvarchar(100)")
                                 .HasColumnName("last_name");
 
                             b1.Property<string>("PhoneNumber")
                                 .HasMaxLength(50)
-                                .HasColumnType("character varying(50)")
+                                .HasColumnType("nvarchar(50)")
                                 .HasColumnName("phone_number");
 
                             b1.HasKey("UserId");

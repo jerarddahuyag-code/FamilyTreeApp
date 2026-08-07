@@ -30,11 +30,11 @@ public class TreeEdgeConfiguration : IEntityTypeConfiguration<TreeEdge>
         builder.HasOne<TreeNode>()
             .WithMany()
             .HasForeignKey(e => e.SourceNodeId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<TreeNode>()
             .WithMany()
             .HasForeignKey(e => e.TargetNodeId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
