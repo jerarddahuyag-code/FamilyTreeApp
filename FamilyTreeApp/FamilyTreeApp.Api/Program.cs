@@ -46,8 +46,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddGoogleOpenIdConnect(options =>
     {
-        options.ClientId = builder.Configuration["Authentication__Google__ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication__Google__ClientSecret"];
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
         options.Scope.Clear();
         options.Scope.Add("openid");
@@ -101,8 +101,8 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "FamilyTreeApp API V1");
     c.RoutePrefix = "swagger"; // serve at /swagger
     // Configure Swagger UI to use Google OIDC client from configuration
-    c.OAuthClientId(builder.Configuration["Authentication__Google__ClientId"]);
-    c.OAuthClientSecret(builder.Configuration["Authentication__Google__ClientSecret"]);
+    c.OAuthClientId(builder.Configuration["Authentication:Google:ClientId"]);
+    c.OAuthClientSecret(builder.Configuration["Authentication:Google:ClientSecret"]);
     c.OAuthAppName("FamilyTreeApp API - Swagger");
     // Use PKCE for the authorization code flow (recommended)
     c.OAuthUsePkce();
