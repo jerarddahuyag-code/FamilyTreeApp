@@ -2,6 +2,7 @@ using FamilyTreeApp.Application.Users.CQRS.Commands;
 using FamilyTreeApp.Domain.Common;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -60,5 +61,14 @@ public class AuthController(
             : config["Frontend:RedirectUri"] ?? "/";
 
         return Redirect(frontendRedirectUri);
+    }
+
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout([FromQuery] string? returnUrl = null)
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        var frontendRedirect = returnUrl ?? config["Frontend:RedirectUri"] ?? "/";
+        return Redirect(frontendRedirect);
     }
 }

@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Trees.Entities;
@@ -13,6 +13,8 @@ public record UpdateTreeCommand : IRequest<bool>
     public string? Name { get; init; }
 
     public string? Description { get; init; }
+
+    public bool? IsPublic { get; init; }
 }
 
 public class UpdateTreeCommandHandler(
@@ -34,6 +36,23 @@ public class UpdateTreeCommandHandler(
         if (result.IsFailure)
         {
             return Result.Failure<bool>(result.Error);
+        }
+
+        if (command.IsPublic.HasValue && command.IsPublic.Value && !existing.IsPublic)
+        {
+            Result publicResult = existing.MakePublic();
+            if (publicResult.IsFailure)
+            {
+                return Result.Failure<bool>(publicResult.Error);
+            }
+        }
+        else if (command.IsPublic.HasValue && !command.IsPublic.Value && existing.IsPublic)
+        {
+            Result privateResult = existing.MakePrivate();
+            if (privateResult.IsFailure)
+            {
+                return Result.Failure<bool>(privateResult.Error);
+            }
         }
 
         context.Trees.Update(existing);

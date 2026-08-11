@@ -12,7 +12,7 @@ public record CreateTreeCommand : IRequest<Guid>
 
     public required bool IsPublic { get; init; }
 
-    public required Guid OwnerId { get; init; }
+    public Guid OwnerId { get; init; }
 }
 
 public class CreateTreeCommandHandler(
