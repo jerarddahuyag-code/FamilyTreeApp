@@ -1,8 +1,9 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -10,7 +11,7 @@ public record ClaimFamilyMemberCommand : IRequest<bool>
 {
     public Guid TreeId { get; init; }
     public Guid FamilyMemberId { get; init; }
-    public Guid UserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 }
 
 public class ClaimFamilyMemberCommandHandler(
@@ -31,7 +32,10 @@ public class ClaimFamilyMemberCommandHandler(
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberClaimed);
         }
 
-        member.UpdateClaimedBy(command.UserId);
+        var userIdStr = command.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid userId);
+
+        member.UpdateClaimedBy(userId);
         dbContext.FamilyMembers.Update(member);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success(true);

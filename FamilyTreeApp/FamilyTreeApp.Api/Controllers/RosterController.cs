@@ -19,10 +19,8 @@ public class RosterController : ApiControllerBase
         [FromServices] IQueryHandler<GetFamilyMembersQuery, GetFamilyMembersResponse> handler,
         CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-
         Result<GetFamilyMembersResponse> result = await handler.HandleAsync(
-            new GetFamilyMembersQuery { TreeId = treeId, UserId = userId },
+            new GetFamilyMembersQuery { TreeId = treeId, User = User },
             cancellationToken);
 
         if (result.IsFailure)
@@ -97,10 +95,8 @@ public class RosterController : ApiControllerBase
         [FromServices] ICommandHandler<ClaimFamilyMemberCommand, bool> handler,
         CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-
         Result<bool> result = await handler.HandleAsync(
-            new ClaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, UserId = userId },
+            new ClaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, User = User },
             cancellationToken);
 
         if (result.IsFailure)
@@ -119,10 +115,8 @@ public class RosterController : ApiControllerBase
         [FromServices] ICommandHandler<UnclaimFamilyMemberCommand, bool> handler,
         CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-
         Result<bool> result = await handler.HandleAsync(
-            new UnclaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, UserId = userId },
+            new UnclaimFamilyMemberCommand { TreeId = treeId, FamilyMemberId = memberId, User = User },
             cancellationToken);
 
         if (result.IsFailure)

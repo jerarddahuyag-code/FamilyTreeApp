@@ -20,10 +20,8 @@ public class CanvasController : ApiControllerBase
         [FromServices] IQueryHandler<GetCanvasQuery, GetCanvasQueryResponse> handler,
         CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-
         Result<GetCanvasQueryResponse> result = await handler.HandleAsync(
-            new GetCanvasQuery { TreeId = treeId, RequestingUserId = userId },
+            new GetCanvasQuery { TreeId = treeId, User = User },
             cancellationToken);
 
         if (result.IsFailure)

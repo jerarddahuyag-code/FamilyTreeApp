@@ -8,13 +8,14 @@ using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Canvas.Queries;
 
 public record GetCanvasQuery : IRequest<GetCanvasQueryResponse>
 {
     public required Guid TreeId { get; init; }
-    public required Guid RequestingUserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 }
 
 public class GetCanvasQueryHandler(
@@ -25,7 +26,10 @@ public class GetCanvasQueryHandler(
 {
     public async Task<Result<GetCanvasQueryResponse>> HandleAsync(GetCanvasQuery query, CancellationToken cancellationToken = default)
     {
-        TreeRole? requesterRole = await treeRoleService.GetUserRoleAsync(query.TreeId, query.RequestingUserId, cancellationToken);
+        var userIdStr = query.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid requestingUserId);
+
+        TreeRole? requesterRole = await treeRoleService.GetUserRoleAsync(query.TreeId, requestingUserId, cancellationToken);
 
         List<TreeNode> nodes = await dbContext.TreeNodes
             .AsNoTracking()

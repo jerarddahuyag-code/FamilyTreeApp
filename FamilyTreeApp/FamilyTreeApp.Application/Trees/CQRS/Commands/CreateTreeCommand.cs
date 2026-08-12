@@ -1,6 +1,7 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Trees.Entities;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
@@ -12,7 +13,7 @@ public record CreateTreeCommand : IRequest<Guid>
 
     public required bool IsPublic { get; init; }
 
-    public Guid OwnerId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 }
 
 public class CreateTreeCommandHandler(
@@ -32,7 +33,10 @@ public class CreateTreeCommandHandler(
 
         await context.Trees.AddAsync(tree, cancellationToken);
 
-        Result<TreeRbac> rbacResult = TreeRbac.Create(Guid.NewGuid(), tree.TreeId, command.OwnerId, Domain.Trees.Enums.TreeRole.Owner);
+        var userIdStr = command.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid ownerId);
+
+        Result<TreeRbac> rbacResult = TreeRbac.Create(Guid.NewGuid(), tree.TreeId, ownerId, Domain.Trees.Enums.TreeRole.Owner);
         if (rbacResult.IsFailure)
         {
             return Result.Failure<Guid>(rbacResult.Error);

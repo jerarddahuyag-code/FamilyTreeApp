@@ -6,13 +6,14 @@ using FamilyTreeApp.Domain.Roster.Enums;
 using FamilyTreeApp.Domain.Trees.Enums;
 using FamilyTreeApp.Domain.Users.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Queries;
 
 public record GetFamilyMembersQuery : IRequest<GetFamilyMembersResponse>
 {
     public required Guid TreeId { get; init; }
-    public required Guid UserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 }
 
 public record GetFamilyMembersResponse
@@ -37,8 +38,11 @@ public class GetFamilyMembersQueryHandler(
 {
     public async Task<Result<GetFamilyMembersResponse>> HandleAsync(GetFamilyMembersQuery query, CancellationToken cancellationToken = default)
     {
+        var userIdStr = query.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid userId);
+
         var isAdmin = await dbContext.TreeRbacs
-            .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == query.UserId && (r.TreeRole == TreeRole.Admin || r.TreeRole == TreeRole.Owner), cancellationToken);
+            .AnyAsync(r => r.TreeId == query.TreeId && r.UserId == userId && (r.TreeRole == TreeRole.Admin || r.TreeRole == TreeRole.Owner), cancellationToken);
 
         List<FamilyMember> members = await dbContext.FamilyMembers.Include(m => m.Relationships).Where(m => m.TreeId == query.TreeId).ToListAsync(cancellationToken);
 

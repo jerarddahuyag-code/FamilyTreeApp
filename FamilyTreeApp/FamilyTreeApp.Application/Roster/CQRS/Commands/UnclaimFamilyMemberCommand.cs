@@ -1,8 +1,9 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Roster.CQRS.Commands;
 
@@ -10,7 +11,7 @@ public record UnclaimFamilyMemberCommand : IRequest<bool>
 {
     public Guid TreeId { get; init; }
     public Guid FamilyMemberId { get; init; }
-    public Guid UserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 }
 
 public class UnclaimFamilyMemberCommandHandler(
@@ -26,7 +27,10 @@ public class UnclaimFamilyMemberCommandHandler(
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.FamilyMemberNotFound);
         }
 
-        if (member.ClaimedByUserId != command.UserId)
+        var userIdStr = command.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid userId);
+
+        if (member.ClaimedByUserId != userId)
         {
             return Result.Failure<bool>(DomainErrors.FamilyMemberErrors.UserNotAuthorizedToUnclaim);
         }

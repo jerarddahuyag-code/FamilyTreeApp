@@ -14,7 +14,7 @@ public class ProfileController : ApiControllerBase
     [HttpPatch]
     public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateProfileCommand request, [FromServices] ICommandHandler<UpdateProfileCommand, bool> updateProfileHandler, CancellationToken cancellationToken)
     {
-        request = request with { UserId = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) };
+        request = request with { User = User };
 
         Result<bool> result = await updateProfileHandler.HandleAsync(request, cancellationToken);
 

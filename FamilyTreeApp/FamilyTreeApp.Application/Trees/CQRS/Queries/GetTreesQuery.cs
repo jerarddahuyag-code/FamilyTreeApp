@@ -1,12 +1,13 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Queries;
 
 public record GetTreesQuery : IRequest<GetTreesQueryResponse>
 {
-    public required Guid UserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
     public required bool IncludePrivate { get; init; }
 }
 
@@ -32,10 +33,13 @@ public class GetTreesQueryHandler(
 {
     public async Task<Result<GetTreesQueryResponse>> HandleAsync(GetTreesQuery query, CancellationToken cancellationToken)
     {
+        var userIdStr = query.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid userId);
+
         List<GetTreesQueryResponseItem> trees = await context.Trees
             .Where(t => (query.IncludePrivate || t.IsPublic) && t.DeletedAt == null)
             .SelectMany(
-                t => t.TreeRbacs.Where(r => r.UserId == query.UserId),
+                t => t.TreeRbacs.Where(r => r.UserId == userId),
                 (t, rbac) => new GetTreesQueryResponseItem
                 {
                     TreeId = t.TreeId,

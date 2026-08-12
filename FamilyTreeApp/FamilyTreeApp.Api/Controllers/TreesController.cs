@@ -15,7 +15,7 @@ public class TreesController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllTrees([FromQuery] GetTreesQuery request, [FromServices] IQueryHandler<GetTreesQuery, GetTreesQueryResponse> handler, CancellationToken cancellationToken)
     {
-        Result<GetTreesQueryResponse> result = await handler.HandleAsync(request with { UserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) }, cancellationToken);
+        Result<GetTreesQueryResponse> result = await handler.HandleAsync(request with { User = User }, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);
@@ -27,7 +27,7 @@ public class TreesController : ApiControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetTreeById(Guid id, [FromServices] IQueryHandler<GetTreeByIdQuery, GetTreeByIdQueryResponse> handler, CancellationToken cancellationToken)
     {
-        Result<GetTreeByIdQueryResponse> result = await handler.HandleAsync(new GetTreeByIdQuery { TreeId = id }, cancellationToken);
+        Result<GetTreeByIdQueryResponse> result = await handler.HandleAsync(new GetTreeByIdQuery { TreeId = id, User = User }, cancellationToken);
         if (result.IsFailure)
         {
             return HandleFailure(result);
@@ -39,8 +39,8 @@ public class TreesController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTree(CreateTreeCommand request, [FromServices] ICommandHandler<CreateTreeCommand, Guid> handler, CancellationToken cancellationToken)
     {
-        // Set the owner id to the currently authenticated user
-        request = request with { OwnerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty) };
+        // Pass the user to the command so it can parse the OwnerId
+        request = request with { User = User };
 
         Result<Guid> result = await handler.HandleAsync(request, cancellationToken);
         if (result.IsFailure)

@@ -5,12 +5,13 @@ using FamilyTreeApp.Domain.Common.ValueObjects;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Application.Users.CQRS.Commands;
 
 public record UpdateProfileCommand : IRequest<bool>
 {
-    public Guid UserId { get; init; }
+    public ClaimsPrincipal? User { get; init; }
 
     public bool? IsPublic { get; init; }
 
@@ -36,9 +37,12 @@ public class UpdateProfileCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(UpdateProfileCommand command, CancellationToken cancellationToken = default)
     {
+        var userIdStr = command.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _ = Guid.TryParse(userIdStr, out Guid userId);
+
         User? user = await context.Users
             .Where(u => u.DeletedAt == null)
-            .FirstOrDefaultAsync(u => u.UserId == command.UserId, cancellationToken);
+            .FirstOrDefaultAsync(u => u.UserId == userId, cancellationToken);
 
         if (user is null)
         {
