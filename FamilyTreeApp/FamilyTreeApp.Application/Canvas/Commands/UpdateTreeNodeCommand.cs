@@ -1,5 +1,6 @@
 using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Canvas.Entities;
+using FamilyTreeApp.Domain.Canvas.Enums;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Roster.Entities;
@@ -11,6 +12,7 @@ public record UpdateTreeNodeCommand : IRequest<bool>
 {
     public required Guid TreeId { get; init; }
     public required Guid NodeId { get; init; }
+    public NodeType? NodeType { get; init; }
     public IReadOnlyList<Guid> FamilyMemberIds { get; init; } = [];
 }
 
@@ -44,7 +46,20 @@ public class UpdateTreeNodeCommandHandler(
             return Result.Failure<bool>(DomainErrors.CanvasErrors.NodeNotFound);
         }
 
-        node.UpdateMembers(distinctMemberIds);
+        if (command.NodeType.HasValue)
+        {
+            var typeResult = node.UpdateNodeType(command.NodeType.Value);
+            if (typeResult.IsFailure)
+            {
+                return Result.Failure<bool>(typeResult.Error);
+            }
+        }
+        
+        var membersResult = node.UpdateMembers(distinctMemberIds);
+        if (membersResult.IsFailure)
+        {
+            return Result.Failure<bool>(membersResult.Error);
+        }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

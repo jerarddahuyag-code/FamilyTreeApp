@@ -1,6 +1,7 @@
 using FamilyTreeApp.Domain.Canvas.Enums;
 using FamilyTreeApp.Domain.Canvas.ValueObjects;
 using FamilyTreeApp.Domain.Common;
+using FamilyTreeApp.Domain.Common.Errors;
 
 namespace FamilyTreeApp.Domain.Canvas.Entities;
 
@@ -39,15 +40,37 @@ public class TreeNode
         return Result.Success();
     }
 
-    public void AddMember(Guid memberId)
+    public Result UpdateNodeType(NodeType newType)
+    {
+        int maxMembers = GetMaxMembersForNodeType(newType);
+
+        if (Members.Count > maxMembers)
+        {
+            return Result.Failure(DomainErrors.CanvasErrors.NodeTypeLimitExceeded);
+        }
+
+        NodeType = newType;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result AddMember(Guid memberId)
     {
         if (Members.Any(m => m.FamilyMemberId == memberId))
         {
-            return;
+            return Result.Success();
+        }
+
+        int maxMembers = GetMaxMembersForNodeType(NodeType);
+
+        if (Members.Count >= maxMembers)
+        {
+            return Result.Failure(DomainErrors.CanvasErrors.NodeTypeLimitExceeded);
         }
 
         Members.Add(new TreeNodeMember(Id, memberId));
         UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 
     public void RemoveMember(Guid memberId)
@@ -60,9 +83,17 @@ public class TreeNode
         }
     }
 
-    public void UpdateMembers(IEnumerable<Guid> memberIds)
+    public Result UpdateMembers(IEnumerable<Guid> memberIds)
     {
         var newMemberIds = memberIds.ToHashSet();
+
+        int maxMembers = GetMaxMembersForNodeType(NodeType);
+
+        if (newMemberIds.Count > maxMembers)
+        {
+            return Result.Failure(DomainErrors.CanvasErrors.NodeTypeLimitExceeded);
+        }
+
         var existingMemberIds = Members.Select(m => m.FamilyMemberId).ToHashSet();
 
         var membersToRemove = Members.Where(m => !newMemberIds.Contains(m.FamilyMemberId)).ToList();
@@ -81,5 +112,17 @@ public class TreeNode
         {
             UpdatedAt = DateTime.UtcNow;
         }
+
+        return Result.Success();
+    }
+
+    private int GetMaxMembersForNodeType(NodeType nodeType)
+    {
+        return nodeType switch
+        {
+            NodeType.Single => 1,
+            NodeType.Partner => 2,
+            _ => int.MaxValue
+        };
     }
 }

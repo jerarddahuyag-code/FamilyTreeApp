@@ -22,3 +22,11 @@ The system is built heavily on Domain-Driven Design (DDD) and CQRS, with distinc
 *   **Dependency Rule:** The `Domain` project has zero external dependencies. The `Api` project only references `Infrastructure` for DI wire-up.
 *   **Authentication Claims:** Google claims are explicitly mapped (e.g., `picture`, `given_name`, `family_name`, `openid`, `profile`, `email`). There is no `role` claim from Google. All role-based access to trees is managed via Tree RBAC. There are no high-access endpoints that can CRUD any entity globally.
 *   **User Information Propagation:** Commands/Queries that require user information must define specific properties (e.g., `UserId`, `Email`). The controller calling the handlers must parse the required information from the base controller's `User` property and explicitly pass it down.
+
+## Domain‑Driven Design Strictness
+
+- **Rich Domain Models**: All domain entities (e.g., `TreeNode`, `TreeNodeMember`) must encapsulate their own invariants and behavior. Direct manipulation of collections or properties outside of the entity is prohibited.
+- **Domain Methods**: Modifications must be performed via explicit methods on the entity (e.g., `TreeNode.AddMember`, `TreeNode.RemoveMember`, `TreeNode.UpdateMembers`). Command handlers should retrieve the aggregate root and invoke these methods.
+- **Aggregate Consistency**: Ensure that any change to a `TreeNode` updates its `UpdatedAt` timestamp and maintains referential integrity.
+- **Validation**: Domain methods are responsible for validation (e.g., preventing duplicate members, ensuring members belong to the same tree).
+- **Repositories**: Persistence should only occur after domain methods have been called; repositories must not contain business logic.

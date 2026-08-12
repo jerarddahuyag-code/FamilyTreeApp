@@ -49,6 +49,7 @@ public static class DomainErrors
         public readonly static Error NodeNotInTree = new("Canvas.NodeNotInTree", "The source or target node's TreeId does not match.", ErrorType.Validation);
         public readonly static Error NodeNotFound = new("Canvas.NodeNotFound", "The canvas node was not found.", ErrorType.NotFound);
         public readonly static Error EdgeNotFound = new("Canvas.EdgeNotFound", "The canvas edge was not found.", ErrorType.NotFound);
+        public readonly static Error NodeTypeLimitExceeded = new("Canvas.NodeTypeLimitExceeded", "The node type limits the number of members it can contain.", ErrorType.Validation);
     }
 }
 
