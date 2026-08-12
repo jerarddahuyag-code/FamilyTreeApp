@@ -37,7 +37,6 @@ public class CreateTreeCommandHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBe(Guid.Empty);
     }
-
     [Fact]
     public async Task HandleAsync_WithInvalidName_ReturnsFailure()
     {
