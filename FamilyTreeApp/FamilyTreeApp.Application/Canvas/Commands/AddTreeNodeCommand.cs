@@ -51,7 +51,7 @@ public class AddTreeNodeCommandHandler(
 
         foreach (Guid memberId in distinctMemberIds)
         {
-            var addResult = node.AddMember(memberId);
+            Result addResult = node.AddMember(memberId);
             if (addResult.IsFailure)
             {
                 return Result.Failure<Guid>(addResult.Error);

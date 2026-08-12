@@ -42,7 +42,7 @@ public class TreeNode
 
     public Result UpdateNodeType(NodeType newType)
     {
-        int maxMembers = GetMaxMembersForNodeType(newType);
+        var maxMembers = GetMaxMembersForNodeType(newType);
 
         if (Members.Count > maxMembers)
         {
@@ -61,7 +61,7 @@ public class TreeNode
             return Result.Success();
         }
 
-        int maxMembers = GetMaxMembersForNodeType(NodeType);
+        var maxMembers = GetMaxMembersForNodeType(NodeType);
 
         if (Members.Count >= maxMembers)
         {
@@ -75,7 +75,7 @@ public class TreeNode
 
     public void RemoveMember(Guid memberId)
     {
-        var member = Members.FirstOrDefault(m => m.FamilyMemberId == memberId);
+        TreeNodeMember? member = Members.FirstOrDefault(m => m.FamilyMemberId == memberId);
         if (member != null)
         {
             Members.Remove(member);
@@ -87,7 +87,7 @@ public class TreeNode
     {
         var newMemberIds = memberIds.ToHashSet();
 
-        int maxMembers = GetMaxMembersForNodeType(NodeType);
+        var maxMembers = GetMaxMembersForNodeType(NodeType);
 
         if (newMemberIds.Count > maxMembers)
         {
@@ -97,13 +97,13 @@ public class TreeNode
         var existingMemberIds = Members.Select(m => m.FamilyMemberId).ToHashSet();
 
         var membersToRemove = Members.Where(m => !newMemberIds.Contains(m.FamilyMemberId)).ToList();
-        foreach (var member in membersToRemove)
+        foreach (TreeNodeMember? member in membersToRemove)
         {
             Members.Remove(member);
         }
 
         var memberIdsToAdd = newMemberIds.Except(existingMemberIds).ToList();
-        foreach (var memberId in memberIdsToAdd)
+        foreach (Guid memberId in memberIdsToAdd)
         {
             Members.Add(new TreeNodeMember(Id, memberId));
         }

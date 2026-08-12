@@ -81,7 +81,7 @@ public class CanvasController : ApiControllerBase
     {
         request = request with { TreeId = treeId, NodeId = nodeId };
         Result<bool> result = await handler.HandleAsync(request, cancellationToken);
-        
+
         if (result.IsFailure)
         {
             return HandleFailure(result);

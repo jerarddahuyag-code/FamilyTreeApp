@@ -48,14 +48,14 @@ public class UpdateTreeNodeCommandHandler(
 
         if (command.NodeType.HasValue)
         {
-            var typeResult = node.UpdateNodeType(command.NodeType.Value);
+            Result typeResult = node.UpdateNodeType(command.NodeType.Value);
             if (typeResult.IsFailure)
             {
                 return Result.Failure<bool>(typeResult.Error);
             }
         }
-        
-        var membersResult = node.UpdateMembers(distinctMemberIds);
+
+        Result membersResult = node.UpdateMembers(distinctMemberIds);
         if (membersResult.IsFailure)
         {
             return Result.Failure<bool>(membersResult.Error);

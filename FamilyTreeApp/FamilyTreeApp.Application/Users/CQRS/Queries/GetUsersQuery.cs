@@ -44,7 +44,7 @@ public class GetUsersQueryHandler(
 {
     public async Task<Result<GetUsersQueryResponse>> HandleAsync(GetUsersQuery query, CancellationToken cancellationToken)
     {
-       var queryable = context.Users.AsQueryable();
+        IQueryable<User> queryable = context.Users.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.SearchEmail))
         {
