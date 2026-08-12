@@ -15,6 +15,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Tests.Unit.Application.Canvas;
 
@@ -61,7 +62,7 @@ public class GetCanvasQueryHandlerTests
         DbSet<TreeEdge> treeEdgesDbSet = new List<TreeEdge> { edge }.BuildMockDbSet();
         _dbContextMock.TreeEdges.Returns(treeEdgesDbSet);
 
-        var query = new GetCanvasQuery { TreeId = treeId, RequestingUserId = userId };
+        var query = new GetCanvasQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetCanvasQueryResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
@@ -102,7 +103,7 @@ public class GetCanvasQueryHandlerTests
         DbSet<TreeEdge> treeEdgesDbSet = new List<TreeEdge>().BuildMockDbSet();
         _dbContextMock.TreeEdges.Returns(treeEdgesDbSet);
 
-        var query = new GetCanvasQuery { TreeId = treeId, RequestingUserId = userId };
+        var query = new GetCanvasQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetCanvasQueryResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
@@ -144,7 +145,7 @@ public class GetCanvasQueryHandlerTests
         DbSet<TreeEdge> treeEdgesDbSet = new List<TreeEdge>().BuildMockDbSet();
         _dbContextMock.TreeEdges.Returns(treeEdgesDbSet);
 
-        var query = new GetCanvasQuery { TreeId = treeId, RequestingUserId = userId };
+        var query = new GetCanvasQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetCanvasQueryResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
@@ -170,7 +171,7 @@ public class GetCanvasQueryHandlerTests
         DbSet<TreeEdge> treeEdgesDbSet = new List<TreeEdge>().BuildMockDbSet();
         _dbContextMock.TreeEdges.Returns(treeEdgesDbSet);
 
-        var query = new GetCanvasQuery { TreeId = treeId, RequestingUserId = userId };
+        var query = new GetCanvasQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetCanvasQueryResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 

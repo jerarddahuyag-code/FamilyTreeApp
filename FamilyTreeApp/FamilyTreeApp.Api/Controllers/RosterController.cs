@@ -3,7 +3,6 @@ using FamilyTreeApp.Application.Roster.CQRS.Queries;
 using FamilyTreeApp.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace FamilyTreeApp.Api.Controllers;
 

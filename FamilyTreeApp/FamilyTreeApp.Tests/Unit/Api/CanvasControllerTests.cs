@@ -51,7 +51,7 @@ public class CanvasControllerTests
         okResult.Value!.Should().Be(expectedReturn);
 
         await handler.Received(1).HandleAsync(
-            Arg.Is<GetCanvasQuery>(q => q != null && q.TreeId == treeId && q.RequestingUserId == _userId),
+            Arg.Is<GetCanvasQuery>(q => q != null && q.TreeId == treeId && q.User != null && q.User.FindFirst(ClaimTypes.NameIdentifier)!.Value == _userId.ToString()),
             Arg.Any<CancellationToken>());
     }
 

@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Tests.Unit.Application.Roster;
 
@@ -42,7 +43,7 @@ public class GetFamilyMembersQueryHandlerTests
         DbSet<TreeRbac> rbacs = new List<TreeRbac>().BuildMockDbSet();
         _dbContextMock.TreeRbacs.Returns(rbacs);
 
-        var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
+        var query = new GetFamilyMembersQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetFamilyMembersResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 
@@ -72,7 +73,7 @@ public class GetFamilyMembersQueryHandlerTests
         DbSet<TreeRbac> rbacs = new List<TreeRbac> { adminRbac }.BuildMockDbSet();
         _dbContextMock.TreeRbacs.Returns(rbacs);
 
-        var query = new GetFamilyMembersQuery { TreeId = treeId, UserId = userId };
+        var query = new GetFamilyMembersQuery { TreeId = treeId, User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) })) };
 
         Result<GetFamilyMembersResponse> result = await _handler.HandleAsync(query, CancellationToken.None);
 

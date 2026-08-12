@@ -6,6 +6,7 @@ using FamilyTreeApp.Domain.Trees.Entities;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Tests.Unit.Application.Trees;
 
@@ -29,7 +30,7 @@ public class CreateTreeCommandHandlerTests
             Name = "Family Tree",
             Description = "A family tree",
             IsPublic = true,
-            OwnerId = Guid.NewGuid()
+            User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()) }))
         };
 
         Result<Guid> result = await handler.HandleAsync(command, CancellationToken.None);
@@ -54,7 +55,7 @@ public class CreateTreeCommandHandlerTests
             Name = "   ",
             Description = "A family tree",
             IsPublic = true,
-            OwnerId = Guid.NewGuid()
+            User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()) }))
         };
 
         Result<Guid> result = await handler.HandleAsync(command, CancellationToken.None);

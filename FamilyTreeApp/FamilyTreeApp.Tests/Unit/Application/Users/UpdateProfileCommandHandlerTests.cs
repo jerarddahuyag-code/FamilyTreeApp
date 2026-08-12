@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
+using System.Security.Claims;
 
 namespace FamilyTreeApp.Tests.Unit.Application.Users;
 
@@ -25,7 +26,7 @@ public class UpdateProfileCommandHandlerTests
         var handler = new UpdateProfileCommandHandler(context, unitOfWork);
         var command = new UpdateProfileCommand
         {
-            UserId = Guid.NewGuid(),
+            User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()) })),
             FirstName = "Jane"
         };
 
