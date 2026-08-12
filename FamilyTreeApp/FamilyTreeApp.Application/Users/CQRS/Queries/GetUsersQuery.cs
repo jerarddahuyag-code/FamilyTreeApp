@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Users.Entities;
 using FamilyTreeApp.Domain.Users.Enums;
@@ -9,6 +9,7 @@ namespace FamilyTreeApp.Application.Users.CQRS.Queries;
 public record GetUsersQuery : IRequest<GetUsersQueryResponse>
 {
     public required bool IncludePrivate { get; init; }
+    public string? SearchEmail { get; init; }
 }
 
 public record GetUsersQueryResponse
@@ -43,7 +44,14 @@ public class GetUsersQueryHandler(
 {
     public async Task<Result<GetUsersQueryResponse>> HandleAsync(GetUsersQuery query, CancellationToken cancellationToken)
     {
-        List<User> users = await context.Users
+        var queryable = context.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.SearchEmail))
+        {
+            queryable = queryable.Where(u => u.Email.ToLower().Contains(query.SearchEmail.ToLower()));
+        }
+
+        List<User> users = await queryable
             .Where(u => (query.IncludePrivate || u.IsPublic)
                 && u.DeletedAt == null)
             .ToListAsync(cancellationToken);

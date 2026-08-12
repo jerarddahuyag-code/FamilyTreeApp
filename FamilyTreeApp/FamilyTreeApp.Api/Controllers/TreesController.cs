@@ -104,4 +104,16 @@ public class TreesController : ApiControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("{treeId:guid}/access")]
+    public async Task<IActionResult> GetTreeAccess(Guid treeId, [FromServices] IQueryHandler<GetTreeAccessQuery, GetTreeAccessQueryResponse> handler, CancellationToken cancellationToken)
+    {
+        Result<GetTreeAccessQueryResponse> result = await handler.HandleAsync(new GetTreeAccessQuery { TreeId = treeId }, cancellationToken);
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return Ok(result.Value.AccessList);
+    }
 }
