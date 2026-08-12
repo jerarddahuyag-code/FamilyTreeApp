@@ -1,4 +1,4 @@
-﻿using FamilyTreeApp.Application.Common.Interfaces;
+using FamilyTreeApp.Application.Common.Interfaces;
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Users.Entities;
@@ -31,6 +31,8 @@ public record GetUserByIdQueryResponse
     public Gender? Gender { get; init; }
 
     public string? Bio { get; init; }
+
+    public bool IsPublic { get; init; }
 }
 
 public class GetUserByIdHandler(
@@ -58,7 +60,8 @@ public class GetUserByIdHandler(
             AvatarUrl = user.ProfileInfo.AvatarUrl,
             PhoneNumber = user.ProfileInfo.PhoneNumber,
             Gender = user.ProfileInfo.Gender,
-            Bio = user.ProfileInfo.Bio
+            Bio = user.ProfileInfo.Bio,
+            IsPublic = user.IsPublic
         })!;
     }
 }
