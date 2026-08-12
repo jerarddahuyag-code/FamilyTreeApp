@@ -7,8 +7,8 @@ namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
 public record AddTreeAccessCommand : IRequest<Guid>
 {
-    public required Guid TreeId { get; init; }
-    public required Guid UserId { get; init; }
+    public Guid TreeId { get; init; }
+    public Guid UserId { get; init; }
     public required TreeRole AccessLevel { get; init; }
 }
 

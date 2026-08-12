@@ -2,6 +2,7 @@
 using FamilyTreeApp.Domain.Common;
 using FamilyTreeApp.Domain.Common.Errors;
 using FamilyTreeApp.Domain.Trees.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTreeApp.Application.Trees.CQRS.Commands;
 
@@ -19,7 +20,8 @@ public class RemoveTreeAccessCommandHandler(
     public async Task<Result<bool>> HandleAsync(RemoveTreeAccessCommand command, CancellationToken cancellationToken = default)
     {
         TreeRbac? treeAccess = await context.TreeRbacs
-            .FindAsync([command.TreeId, command.UserId], cancellationToken);
+            .Where(t => t.TreeId == command.TreeId && t.UserId == command.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
         if (treeAccess is null)
         {
             return Result.Failure<bool>(DomainErrors.TreeErrors.TreeAccessNotFound);
