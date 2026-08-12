@@ -71,4 +71,20 @@ public class AuthController(
         var frontendRedirect = returnUrl ?? config["Frontend:RedirectUri"] ?? "/";
         return Redirect(frontendRedirect);
     }
+
+    [HttpGet("me")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public IActionResult GetCurrentUser()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        var name = User.FindFirst(ClaimTypes.Name)?.Value;
+
+        return Ok(new
+        {
+            Id = userId,
+            Email = email,
+            Name = name
+        });
+    }
 }
