@@ -38,4 +38,48 @@ public class TreeNode
         UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
+
+    public void AddMember(Guid memberId)
+    {
+        if (Members.Any(m => m.FamilyMemberId == memberId))
+        {
+            return;
+        }
+
+        Members.Add(new TreeNodeMember(Id, memberId));
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RemoveMember(Guid memberId)
+    {
+        var member = Members.FirstOrDefault(m => m.FamilyMemberId == memberId);
+        if (member != null)
+        {
+            Members.Remove(member);
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void UpdateMembers(IEnumerable<Guid> memberIds)
+    {
+        var newMemberIds = memberIds.ToHashSet();
+        var existingMemberIds = Members.Select(m => m.FamilyMemberId).ToHashSet();
+
+        var membersToRemove = Members.Where(m => !newMemberIds.Contains(m.FamilyMemberId)).ToList();
+        foreach (var member in membersToRemove)
+        {
+            Members.Remove(member);
+        }
+
+        var memberIdsToAdd = newMemberIds.Except(existingMemberIds).ToList();
+        foreach (var memberId in memberIdsToAdd)
+        {
+            Members.Add(new TreeNodeMember(Id, memberId));
+        }
+
+        if (membersToRemove.Count > 0 || memberIdsToAdd.Count > 0)
+        {
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
 }

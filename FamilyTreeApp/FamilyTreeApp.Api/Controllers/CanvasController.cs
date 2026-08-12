@@ -70,6 +70,26 @@ public class CanvasController : ApiControllerBase
         return Created($"/api/v1/trees/{treeId}/canvas/nodes/{result.Value}", Result.Success(new { NodeId = result.Value }));
     }
 
+    [HttpPut("nodes/{nodeId:guid}")]
+    [Authorize(Policy = "TreeAdmin")]
+    public async Task<IActionResult> UpdateTreeNode(
+        Guid treeId,
+        Guid nodeId,
+        [FromBody] UpdateTreeNodeCommand request,
+        [FromServices] ICommandHandler<UpdateTreeNodeCommand, bool> handler,
+        CancellationToken cancellationToken)
+    {
+        request = request with { TreeId = treeId, NodeId = nodeId };
+        Result<bool> result = await handler.HandleAsync(request, cancellationToken);
+        
+        if (result.IsFailure)
+        {
+            return HandleFailure(result);
+        }
+
+        return NoContent();
+    }
+
     [HttpDelete("nodes/{nodeId:guid}")]
     [Authorize(Policy = "TreeAdmin")]
     public async Task<IActionResult> RemoveTreeNode(
