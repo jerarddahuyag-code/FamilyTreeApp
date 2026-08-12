@@ -67,7 +67,7 @@ public class CanvasController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/v1/trees/{treeId}/canvas/nodes/{result.Value}", new { NodeId = result.Value });
+        return Created($"/api/v1/trees/{treeId}/canvas/nodes/{result.Value}", Result.Success(new { NodeId = result.Value }));
     }
 
     [HttpDelete("nodes/{nodeId:guid}")]
@@ -105,7 +105,7 @@ public class CanvasController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/v1/trees/{treeId}/canvas/edges/{result.Value}", new { EdgeId = result.Value });
+        return Created($"/api/v1/trees/{treeId}/canvas/edges/{result.Value}", Result.Success(new { EdgeId = result.Value }));
     }
 
     [HttpDelete("edges/{edgeId:guid}")]

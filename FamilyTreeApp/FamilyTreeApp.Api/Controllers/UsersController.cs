@@ -45,7 +45,7 @@ public class UsersController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/users/{result.Value}", result.Value);
+        return Created($"/api/users/{result.Value}", Result.Success(new { UserId = result.Value }));
     }
 
     [HttpDelete("{id:guid}")]

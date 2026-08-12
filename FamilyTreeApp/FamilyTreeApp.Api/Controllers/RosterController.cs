@@ -48,7 +48,7 @@ public class RosterController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/trees/{treeId}/members/{result.Value}", new { FamilyMemberId = result.Value });
+        return Created($"/api/trees/{treeId}/members/{result.Value}", Result.Success(new { FamilyMemberId = result.Value }));
     }
 
     [HttpPut("members/{memberId:guid}/profile")]
@@ -208,7 +208,7 @@ public class RosterController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/trees/{treeId}/members/{memberId}/relationships/{result.Value}", new { FamilyMemberRelationshipId = result.Value });
+        return Created($"/api/trees/{treeId}/members/{memberId}/relationships/{result.Value}", Result.Success(new { FamilyMemberRelationshipId = result.Value }));
     }
 
     [HttpDelete("members/{memberId:guid}/relationships/{relationshipId:guid}")]

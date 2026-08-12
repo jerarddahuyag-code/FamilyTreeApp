@@ -48,7 +48,7 @@ public class TreesController : ApiControllerBase
             return HandleFailure(result);
         }
 
-        return Created($"/api/trees/{result.Value}", new { TreeId = result.Value });
+        return Created($"/api/trees/{result.Value}", Result.Success(new { TreeId = result.Value }));
     }
 
     [HttpPatch("{id:guid}")]
